@@ -33,8 +33,8 @@ begin
 
     PERFORM acs_object_type__create_type (
                 ''ims_manifest'',          -- object_type
-                ''Manifest'',              -- pretty_name
-                ''Manifests'',             -- pretty_plural
+                ''IMS_Manifest'',              -- pretty_name
+                ''IMS_Manifests'',             -- pretty_plural
                 ''acs_object'',            -- supertype
                 ''imscp_manifests'',       -- table_name
                 ''man_id'',                -- id_column
@@ -45,8 +45,8 @@ begin
         );
     PERFORM acs_object_type__create_type (
                 ''ims_organization'',       -- object_type
-                ''Organization'',            -- pretty_name
-                ''Organizations'',           -- pretty_plural
+                ''IMS_Organization'',            -- pretty_name
+                ''IMS_Organizations'',           -- pretty_plural
                 ''ims_manifest'',              -- supertype
                 ''imscp_organizations'',     -- table_name
                 ''org_id'',                  -- id_column
@@ -57,8 +57,8 @@ begin
         );
     PERFORM acs_object_type__create_type (
                 ''ims_item'',       -- object_type
-                ''Item'',            -- pretty_name
-                ''Items'',           -- pretty_plural
+                ''IMS_Item'',            -- pretty_name
+                ''IMS_Items'',           -- pretty_plural
                 ''ims_organization'',              -- supertype
                 ''imscp_items'',     -- table_name
                 ''item_id'',                  -- id_column
@@ -69,8 +69,8 @@ begin
         );
     PERFORM acs_object_type__create_type (
                 ''ims_resource'',       -- object_type
-                ''Resource'',            -- pretty_name
-                ''Resources'',           -- pretty_plural
+                ''IMS_Resource'',            -- pretty_name
+                ''IMS_Resources'',           -- pretty_plural
                 ''ims_item'',              -- supertype
                 ''imscp_resources'',     -- table_name
                 ''org_id'',                  -- id_column
@@ -100,12 +100,13 @@ create table ims_cp_manifests (
     identifier      varchar(1000),
     version         varchar(100),
     orgs_default    varchar(100),
-    hasmetadata     boolean, 
+    hasmetadata     boolean default 'f' not null, 
  -- A manifest could have multiple submanifests
     parent_man_id   integer,
     isscorm         boolean,
     folder_id       integer,
-    fs_package_id      integer
+    fs_package_id   integer,
+    isshared	    boolean default 'f' not null
 );
 
 comment on table ims_cp_manifests is '
@@ -155,7 +156,8 @@ create table ims_cp_organizations (
     identifier      varchar(100),
     structure       varchar(100),
     title           varchar(1000),
-    hasmetadata     boolean
+    hasmetadata     boolean default 'f' not null,
+    isshared	    boolean default 'f' not null
 );
 
 -- create index for ims_cp_organizations
@@ -181,7 +183,7 @@ create table ims_cp_items (
     parameters      varchar(1000),
     title           varchar(1000),
     parent_item     integer,
-    hasmetadata     boolean,
+    hasmetadata     boolean default 'f' not null,
 -- SCORM extensions (based on SCORM 1.2 specs)
     prerequisites_t varchar(100),
     prerequisites_s varchar(200),
@@ -189,7 +191,8 @@ create table ims_cp_items (
     maxtimeallowed  varchar(1000),
     timelimitaction varchar(1000),
     datafromlms     varchar(200),
-    masteryscore    varchar(255)
+    masteryscore    varchar(255),
+    isshared	    boolean default 'f' not null
 );
 
 -- create index for ims_cp_items
@@ -211,7 +214,7 @@ create table ims_cp_resources (
     identifier      varchar(1000),
     type            varchar(1000),
     href            varchar(2000),
-    hasmetadata     boolean,
+    hasmetadata     boolean default 'f' not null,
  -- SCORM specific
     scorm_type      varchar(1000)
 );
@@ -270,10 +273,62 @@ create table ims_cp_files (
                     on delete cascade,
     pathtofile      varchar(2000),
     filename        varchar(2000),
-    hasmetadata     boolean,
+    hasmetadata     boolean default 'f' not null,
                     constraint ims_cp_file_pk
                     primary key (file_id, res_id)
 );
     
 -- create index for ims_cp_files
 create index ims_cp_files__res_id_idx on ims_cp_files (res_id);
+
+
+create table ims_cp_manifest_class (
+    man_id              integer
+                        constraint ims_cp_manifest_class__man_id_fk
+                        references ims_cp_manifests(man_id)
+                        on delete cascade,
+    lorsm_instance_id   integer
+                        constraint ims_cp_manifest_class__lorsm_fk
+                        references apm_packages (package_id),
+    community_id	integer
+			constraint ims_cp_manifest_class__comm_id_fk
+			references dotlrn_communities_all(community_id),
+    class_key		varchar(100)
+			constraint ims_cp_manifest_class__class_key_fk
+  			references dotlrn_community_types(community_type),
+    isenabled           boolean default 't' not null,
+    istrackable         boolean default 'f' not null,
+                        primary key (man_id, lorsm_instance_id)
+);
+
+comment on table ims_cp_manifest_class is '
+This table  helps us manage the relations between a manifest (course)
+and its .LRN class/community
+';
+
+comment on column ims_cp_manifest_class.man_id is '
+This is the manifest_id for the course
+';
+
+comment on column ims_cp_manifest_class.lorsm_instance_id is '
+This is the package_id for the instance of LORMS in a particular 
+.LRN class/community. This is *NOT* the community_id. 
+';
+
+comment on column ims_cp_manifest_class.community_id is '
+This is the package_id for the class/community that the manifest got uploaded
+';
+
+comment on column ims_cp_manifest_class.class_key is '
+This is the class_key for the class/community
+';
+
+comment on column ims_cp_manifest_class.isenabled is '
+Whether the course is enabled for that community instance.
+default true
+';
+
+comment on column ims_cp_manifest_class.istrackable is '
+Whether the course is trackable for that community instance.
+default false
+';

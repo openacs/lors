@@ -36,7 +36,9 @@ create or replace function ims_manifest__new (
     timestamp with time zone, -- creation_date
     integer,   -- creation_user
     varchar,    -- creation_ip
-    integer    -- package_id
+    integer,    -- package_id
+    integer,    -- community_id
+    varchar     -- class_key
 )
 returns integer as '
 declare
@@ -49,11 +51,13 @@ declare
     p_parent_man_id         alias for $7;
     p_isscorm               alias for $8;
     p_folder_id             alias for $9;
-    p_fs_package_id            alias for $10;
+    p_fs_package_id         alias for $10;
     p_creation_date         alias for $11;
     p_creation_user         alias for $12;
     p_creation_ip           alias for $13;
     p_package_id            alias for $14;
+    p_community_id          alias for $15;
+    p_class_key             alias for $16;
 
     v_man_id       integer;
 begin
@@ -71,6 +75,14 @@ begin
         (man_id, course_name, identifier, version, orgs_default, hasmetadata, parent_man_id, isscorm, folder_id, fs_package_id)
         values
         (v_man_id, p_course_name, p_identifier, p_version, p_orgs_default, p_hasmetadata, p_parent_man_id, p_isscorm, p_folder_id, p_fs_package_id);
+
+	-- now we add it to the manifest_class relation table
+
+	insert into ims_cp_manifest_class
+	(man_id, lorsm_instance_id, community_id, class_key, isenabled, istrackable)
+	values
+	(v_man_id, p_package_id, p_community_id, p_class_key, ''t'', ''f'');
+
 
         return v_man_id;
 end;
@@ -374,3 +386,33 @@ begin
     return p_file_id;
 end;
 ' language 'plpgsql';
+
+
+-- put in and correct some stuff for ims_cp_items
+
+-- function name
+create or replace function ims_item__name (integer)
+returns varchar as '
+declare
+  name__object_id        alias for $1;  
+  v_title                ims_cp_items.title%TYPE;  
+  v_object_id            integer;
+begin
+
+  select title 
+  into v_title
+  from ims_cp_items
+  where item_id = name__object_id;
+
+  return v_title;
+  
+end;' language 'plpgsql' stable strict;
+
+
+update acs_object_types
+set table_name = 'ims_cp_items',
+    name_method = 'ims_item__name',
+    pretty_name = 'IMS Item',
+    pretty_plural = 'IMS Items'
+where object_type = 'ims_item';
+

@@ -23,6 +23,8 @@ ad_library {
 #
 
 namespace eval lors::imsmd {
+    # set utf-8 system encoding
+    encoding system utf-8
 
     ad_proc -public getAtt {doc attr_name} {
         getAtt Gets attributes for an specific element
@@ -31,6 +33,7 @@ namespace eval lors::imsmd {
         @param attr_name Attribute we want to fetch
 
     } {
+
         if {[$doc hasAttribute $attr_name] == 1} {
             $doc getAttribute $attr_name
         } else {
@@ -1142,681 +1145,1093 @@ namespace eval lors::imsmd {
         }
     }
 
-ad_proc -public addMetadata {
-    {-acs_object:required}
-    {-node:required}
-    {-dir {}}
-} {
-    Adds metadata for a learning resource.
-    This is the master function for adding metadata. This is the MD mama function.
 
-    @option acs_object acs object for resource (element) that contains metadata.
-    @option node XML node that contains the metadata
-    @option dir directory where the imsmanifest.xml file is located. This is use in the case the metadata is in a different file location (adlcp:location).
-    @author Ernie Ghiglione (ErnieG@mm.st).
+    ad_proc -public addLOM {
+	{-lom:required}
+	{-prefix}
+	{-acs_object:required}
+	{-dir {}}
+    } {
+	Adds LOM metadata for a learning resource.
+	This is the master function for adding metadata. 
+        This is the MD mama function for entering LOM into the db.
 
-} {
-    set p_ims_md_id $acs_object
-    set mdnode $node
-    set path_to_file $dir
-    #[lors::imsmd::getMDNode $manifest]
+	@param lom the LOM node (XML) for the learning resource
+	@param acs_object acs object for resource (element) that contains metadata
+        @param dir dir directory where the imsmanifest.xml file is located. This is use in the case the metadata is in a different file location (adlcp:location).
+	@author Ernie Ghiglione (ErnieG@mm.st)
 
-    set p_schema [lindex [lindex [lors::imsmd::getMDSchema $mdnode] 0] 0]
-    set p_schemaversion [lindex [lors::imsmd::getMDSchema $mdnode] 1]
+    } {
+
+	set p_ims_md_id $acs_object
+	set path_to_file $dir
+
+	db_transaction {
+            # General
+
+		# Title
+		set titles [lors::imsmd::mdGeneral -element title -node $lom -prefix $prefix]
+
+		# Structure
+		set structure_s [lindex [lindex [lindex [lors::imsmd::mdGeneral -element structure -node $lom -prefix $prefix] 0] 0] 1]
+		set structure_v [lindex [lindex [lindex [lors::imsmd::mdGeneral -element structure -node $lom -prefix $prefix] 0] 1] 1]
+
+		# Aggregation level
+		set agg_level_s [lindex [lindex [lindex [lors::imsmd::mdGeneral -element aggregationlevel -node $lom -prefix $prefix] 0] 0] 1]
+		set agg_level_v [lindex [lindex [lindex [lors::imsmd::mdGeneral -element aggregationlevel  -node $lom -prefix $prefix] 0] 1] 1]
+
+		# Catalogentry
+		set catalogentries [lors::imsmd::mdGeneral -element catalogentry -node $lom -prefix $prefix]
+
+		# Languages
+		set languages [lors::imsmd::mdGeneral -element language -node $lom -prefix $prefix]
+		
+		# Descriptions
+		set descriptions [lors::imsmd::mdGeneral -element description -node $lom -prefix $prefix]
+
+		# Keywords
+		set keywords [lors::imsmd::mdGeneral -element keyword -node $lom -prefix $prefix]
+
+		# Coverages
+		set coverages [lors::imsmd::mdGeneral -element coverage -node $lom -prefix $prefix]
+
+		# Now we insert the values into the DB
+		db_dml add_new_general {
+		    insert into ims_md_general (ims_md_id, structure_s, structure_v, agg_level_s, agg_level_v)
+		    values
+		    (:p_ims_md_id, :structure_s, :structure_v, :agg_level_s, :agg_level_v)
+		}
 
 
-    set lom [lindex [lors::imsmd::getLOM $mdnode $path_to_file] 0]
-    set prefix [lindex [lors::imsmd::getLOM $mdnode $path_to_file] 1]
+		# Adds General Titles
+
+		foreach title $titles {
+		    set p_ims_md_ge_ti_id [db_nextval ims_md_general_title_seq]
+		    set p_title_l [lindex $title 0]
+		    set p_title_s [lindex $title 1]
+		    
+		    db_dml add_new_general_titles {
+			insert into ims_md_general_title (ims_md_ge_ti_id, ims_md_id, title_l, title_s)
+			values
+			(:p_ims_md_ge_ti_id, :p_ims_md_id, :p_title_l, :p_title_s)
+		    }
+
+		}
+
+		# Adds General Catalog Entries
+		foreach catalogentry $catalogentries {
+		    set p_ims_md_ge_cata_id [db_nextval ims_md_general_cata_seq]
+		    set p_catalog [lindex $catalogentry 0]
+		    set p_entry_l [lindex [lindex $catalogentry 1] 0]
+		    set p_entry_s [lindex [lindex $catalogentry 1] 1]
+		    
+		    db_dml add_new_general_catalogentries {
+			
+			insert into ims_md_general_cata (ims_md_ge_cata_id, ims_md_id, catalog, entry_l, entry_s)
+			values
+			(:p_ims_md_ge_cata_id, :p_ims_md_id, :p_catalog, :p_entry_l, :p_entry_s)
+		    }
+		}
+
+		# Adds General Languages
+		foreach language $languages {
+		    set p_ims_md_ge_lang_id [db_nextval ims_md_general_lang_seq]
+
+		    db_dml add_new_general_language {
+			insert into ims_md_general_lang (ims_md_ge_lang_id, ims_md_id, language)
+			values
+			(:p_ims_md_ge_lang_id, :p_ims_md_id, :language)
+		    }
+		}
+
+		# Adds General Description
+		foreach description $descriptions {
+		    set p_ims_md_ge_desc_id [db_nextval ims_md_general_desc_seq]
+		    set p_descrip_l [lindex $description 0]
+		    set p_descrip_s [lindex $description 1]
+		    
+		    db_dml add_new_general_description {
+			insert into ims_md_general_desc (ims_md_ge_desc_id, ims_md_id, descrip_l, descrip_s)
+			values
+			(:p_ims_md_ge_desc_id, :p_ims_md_id, :p_descrip_l, :p_descrip_s)
+		    }
+		}
+		
+		# Adds General Keywords
+		foreach keyword $keywords {
+		    set p_ims_md_ge_key_id [db_nextval ims_md_general_key_seq]
+		    set p_keyword_l [lindex $keyword 0]
+		    set p_keyword_s [lindex $keyword 1]
+		    
+		    db_dml add_new_general_keyword {
+			insert into ims_md_general_key (ims_md_ge_key_id, ims_md_id, keyword_l, keyword_s)
+			values
+			(:p_ims_md_ge_key_id, :p_ims_md_id, :p_keyword_l, :p_keyword_s)
+		    }
+		}
+
+		# Adds General Coverage
+		foreach coverage $coverages {
+		    set p_ims_md_ge_cove_id [db_nextval ims_md_general_cover_seq]
+		    set p_cover_l [lindex $coverage 0]
+		    set p_cover_s [lindex $coverage 1]
+		    
+		    db_dml add_new_general_coverage {
+			insert into ims_md_general_cover (ims_md_ge_cove_id, ims_md_id, cover_l, cover_s)
+			values
+			(:p_ims_md_ge_cove_id, :p_ims_md_id, :p_cover_l, :p_cover_s)
+		    }
+		}
+
+		# Lifecycle
+
+		# Version
+		set version [lors::imsmd::mdLifeCycle -element version -node $lom -prefix $prefix]
+		set version_l [lindex [lindex $version 0] 0]
+		set version_s [lindex [lindex $version 0] 1]
+		
+		# Status
+		set status [lors::imsmd::mdLifeCycle -element status -node $lom -prefix $prefix]
+		set status_s [lindex [lindex [lindex $status 0] 0] 1]
+		set status_v [lindex [lindex [lindex $status 0] 1] 1]
+		
+		# Contribute
+		set contributes [lors::imsmd::mdLifeCycle -element contribute -node $lom -prefix $prefix]
+		
+		# Adds Lifecycle Version and Status
+		db_dml add_new_lifecycle {
+		    insert into ims_md_life_cycle (ims_md_id, version_l, version_s, status_s, status_v)
+		    values
+		    (:p_ims_md_id, :version_l, :version_s, :status_s, :status_v)
+		}
+
+		# Adds Lifecycle Contributes
+		foreach contribute $contributes {
+		    set p_ims_md_lf_cont_id [db_nextval ims_md_life_cycle_contrib_seq]
+		    set p_role_s [lindex [lindex [lindex $contribute 0] 0] 1]
+		    set p_role_v [lindex [lindex [lindex $contribute 0] 1] 1]
+		    set p_cont_date [lindex [lindex $contribute 2] 0]
+		    set p_cont_date_l [lindex [lindex [lindex $contribute 2] 1] 0]
+		    set p_cont_date_s [lindex [lindex [lindex $contribute 2] 1] 1]
+		    
+		    set p_entities [lindex $contribute 1]
+		    
+		    db_dml add_new_lifecycle_contrib {
+			insert into ims_md_life_cycle_contrib (ims_md_lf_cont_id, ims_md_id, role_s, role_v, cont_date, cont_date_l, cont_date_s)
+			values
+			(:p_ims_md_lf_cont_id, :p_ims_md_id, :p_role_s, :p_role_v, :p_cont_date, :p_cont_date_l, :p_cont_date_s)
+		    }
+
+
+		    foreach entity $p_entities {
+			set p_ims_md_lf_cont_enti_id [db_nextval ims_md_life_cycle_contrib_entity_seq]
+			set p_entity $entity
+			
+			db_dml add_new_lifecycle_contrib_entity {
+			    insert into ims_md_life_cycle_contrib_entity (ims_md_lf_cont_enti_id, ims_md_lf_cont_id, entity)
+			    values
+			    (:p_ims_md_lf_cont_enti_id, :p_ims_md_lf_cont_id, :p_entity)
+			}
+		    }
+		    
+		}
+		
+		# Metadata
+
+		# Language
+		set p_language [lors::imsmd::mdMetadata -element language -node $lom -prefix $prefix]
+		
+		# Catalogentry
+		set catalogentries [lors::imsmd::mdMetadata -element catalogentry -node $lom -prefix $prefix]
+		
+		# Contribute
+		set contributes [lors::imsmd::mdMetadata -element contribute -node $lom -prefix $prefix]
+		
+		# Metadatascheme
+		set metadataschemes [lors::imsmd::mdMetadata -element metadatascheme -node $lom -prefix $prefix]
+
+		# Adds Metadata Language
+		db_dml add_new_metadata {
+		    insert into ims_md_metadata (ims_md_id, language)
+		    values
+		    (:p_ims_md_id, :p_language)
+		}
+
+		# Adds Catalogentry
+		foreach catalogentry $catalogentries {
+		    set p_ims_md_md_cata_id [db_nextval ims_md_metadata_cata_seq]
+		    set p_catalog [lindex $catalogentry 0]
+		    set p_entry_l [lindex [lindex $catalogentry 1] 0]
+		    set p_entry_s [lindex [lindex $catalogentry 1] 1]
+
+		    db_dml add_new_metadata_catalogentries {
+			insert into ims_md_metadata_cata (ims_md_md_cata_id, ims_md_id, catalog, entry_l, entry_s)
+			values
+			(:p_ims_md_md_cata_id, :p_ims_md_id, :p_catalog, :p_entry_l, :p_entry_s)
+		    }
+		}
+
+		# Adds Lifecycle Contributes
+		foreach contribute $contributes {
+		    set p_ims_md_md_cont_id [db_nextval ims_md_metadata_contrib_seq]
+		    set p_role_s [lindex [lindex [lindex $contribute 0] 0] 1]
+		    set p_role_v [lindex [lindex [lindex $contribute 0] 1] 1]
+		    set p_cont_date [lindex [lindex $contribute 2] 0]
+		    set p_cont_date_l [lindex [lindex [lindex $contribute 2] 1] 0]
+		    set p_cont_date_s [lindex [lindex [lindex $contribute 2] 1] 1]
+
+		    set p_ims_md_md_cont_enti_id [db_nextval ims_md_metadata_contrib_entity_seq]
+		    set p_entity [lindex [lindex $contribute 1] 0]
+
+		    db_dml add_new_metadata_contrib {
+			insert into ims_md_metadata_contrib (ims_md_md_cont_id, ims_md_id, role_s, role_v, cont_date, cont_date_l, cont_date_s)
+			values
+			(:p_ims_md_md_cont_id, :p_ims_md_id, :p_role_s, :p_role_v, :p_cont_date, :p_cont_date_l, :p_cont_date_s)
+		    }
+
+		    db_dml add_new_metadata_contrib_entity {
+			insert into ims_md_metadata_contrib_entity (ims_md_md_cont_enti_id, ims_md_md_cont_id, entity)
+			values
+			(:p_ims_md_md_cont_enti_id, :p_ims_md_md_cont_id, :p_entity)
+		    }
+
+		}
+
+		# Adds Metadata Schemes
+		foreach metadatascheme $metadataschemes {
+		    set p_scheme $metadatascheme
+		    
+		    db_dml add_new_metadata_metadatascheme {
+			insert into ims_md_metadata_scheme (ims_md_id, scheme)
+			values
+			(:p_ims_md_id, :p_scheme)
+		    }
+		}
+
+		# Technical
+
+		# format
+		set formats [lors::imsmd::mdTechnical -element format -node $lom -prefix $prefix]
+		
+		# location
+		set locations [lors::imsmd::mdTechnical -element location -node $lom -prefix $prefix]
+
+		# size, installation remarks, otherplatformrequirements, duration
+		set p_size [lors::imsmd::mdTechnical -element size -node $lom -prefix $prefix]
+		set p_instl_rmks [lors::imsmd::mdTechnical -element installationremarks -node $lom -prefix $prefix]
+		set p_instl_rmks_l [lindex [lindex $p_instl_rmks 0] 0]
+		set p_instl_rmks_s [lindex [lindex $p_instl_rmks 0] 1]
+		set p_otr_plt [lors::imsmd::mdTechnical -element otherplatformrequirements -node $lom -prefix $prefix]
+		set p_otr_plt_l [lindex [lindex $p_otr_plt 0] 0]
+		set p_otr_plt_s [lindex [lindex $p_otr_plt 0] 1]
+		set p_durat [lors::imsmd::mdTechnical -element duration -node $lom -prefix $prefix]
+		set p_duration [lindex $p_durat 0]
+		set p_duration_l [lindex [lindex $p_durat 1] 0]
+		set p_duration_s [lindex [lindex $p_durat 1] 1]
+
+		# requirement
+		set requirements [lors::imsmd::mdTechnical -element requirement -node $lom -prefix $prefix]
+
+		# Adds Technical size, installation remarks, otherplatformrequirements, duration
+		db_dml add_new_technical {
+		    insert into ims_md_technical (ims_md_id, t_size, instl_rmrks_l, instl_rmrks_s, otr_plt_l, otr_plt_s, duration, duration_l, duration_s)
+		    values
+		    (:p_ims_md_id, :p_size, :p_instl_rmks_l, :p_instl_rmks_s, :p_otr_plt_l, :p_otr_plt_s, :p_duration, :p_duration_l, :p_duration_s)
+		}
+
+		# Adds Technical Format
+
+		foreach format $formats {
+		    set p_ims_md_te_fo_id [db_nextval ims_md_technical_format_seq]
+		    set p_format $format
+		    
+		    db_dml add_new_technical_format {
+			insert into ims_md_technical_format (ims_md_te_fo_id, ims_md_id, format)
+			values
+			(:p_ims_md_te_fo_id, :p_ims_md_id, :p_format)
+		    }
+		}
+		
+		# Adds Technical Location
+		
+		foreach location $locations {
+		    set p_ims_md_te_lo_id [db_nextval ims_md_technical_location_seq]
+		    set p_type [lindex $location 1]
+		    set p_location [lindex $location 0]
+
+		    db_dml add_new_technical_location {
+			insert into ims_md_technical_location (ims_md_te_lo_id, ims_md_id, type, location)
+			values
+			(:p_ims_md_te_lo_id, :p_ims_md_id, :p_type, :p_location)
+		    }
+		}
+
+		# Adds Technical Requirements
+
+		foreach requirement $requirements {
+		    set p_ims_md_te_rq_id [db_nextval ims_md_technical_requirement_seq]
+		    set p_type_s [lindex [lindex [lindex $requirement 0] 0] 1]
+		    set p_type_v [lindex [lindex [lindex $requirement 0] 1] 1]
+		    set p_name_s [lindex [lindex [lindex $requirement 1] 0] 1]
+		    set p_name_v [lindex [lindex [lindex $requirement 1] 1] 1]
+		    set p_min_version [lindex $requirement 2]
+		    set p_max_version [lindex $requirement 3]
+
+		    db_dml add_new_technical_requirement {
+			insert into ims_md_technical_requirement (ims_md_te_rq_id, ims_md_id, type_s, type_v, name_s, name_v, min_version, max_version)
+			values
+			(:p_ims_md_te_rq_id, :p_ims_md_id, :p_type_s, :p_type_v, :p_name_s, :p_name_v, :p_min_version, :p_max_version)
+		    }
+		}
+
+
+		# Educational
+
+		# interactivitytype, interactivitylevel, semanticdensity, difficulty, typical_learning_time, description
+		set p_int_type [lors::imsmd::mdEducational -element interactivitytype -node $lom -prefix $prefix]
+		set p_int_type_s [lindex [lindex [lindex $p_int_type 0] 0] 1]
+		set p_int_type_v [lindex [lindex [lindex $p_int_type 0] 1] 1]
+		set p_int_level [lors::imsmd::mdEducational -element interactivitylevel -node $lom -prefix $prefix]
+		set p_int_level_s [lindex [lindex [lindex $p_int_level 0] 0] 1]
+		set p_int_level_v [lindex [lindex [lindex $p_int_level 0] 1] 1]
+		set p_sem_density [lors::imsmd::mdEducational -element semanticdensity -node $lom -prefix $prefix]
+		set p_sem_density_s [lindex [lindex [lindex $p_sem_density 0] 0] 1]
+		set p_sem_density_v [lindex [lindex [lindex $p_sem_density 0] 1] 1]
+		set p_difficulty [lors::imsmd::mdEducational -element difficulty -node $lom -prefix $prefix]
+		set p_difficulty_s [lindex [lindex [lindex $p_difficulty 0] 0] 1]
+		set p_difficulty_v [lindex [lindex [lindex $p_difficulty 0] 1] 1]
+		set p_type_lrn_tim [lors::imsmd::mdEducational -element typicallearningtime -node $lom -prefix $prefix]
+		set p_type_lrn_time [lindex $p_type_lrn_tim 0]
+		set p_type_lrn_time_l [lindex [lindex $p_type_lrn_tim 1] 0]
+		set p_type_lrn_time_s [lindex [lindex $p_type_lrn_tim 1] 1]
+		set descrips [lors::imsmd::mdEducational -element description -node $lom -prefix $prefix]
+
+		# learningresourcetype
+		set learningresourcetypes [lors::imsmd::mdEducational -element learningresourcetype -node $lom -prefix $prefix]
+
+
+		# intendedenduserrole
+		set intendedenduserroles [lors::imsmd::mdEducational -element intendedenduserrole -node $lom -prefix $prefix]
+
+		# context
+		set contexts  [lors::imsmd::mdEducational -element context -node $lom -prefix $prefix]
+
+		# typicalagerange
+		set typicalageranges [lors::imsmd::mdEducational -element typicalagerange -node $lom -prefix $prefix]
+
+		# language 
+		set languages [lors::imsmd::mdEducational -element language -node $lom -prefix $prefix]
+
+
+		# Adds Educational interactivitytype, interactivitylevel, semanticdensity, difficulty, typical_learning_time
+		db_dml add_new_educational {
+		    insert into ims_md_educational (ims_md_id, int_type_s, int_type_v, int_level_s, int_level_v, sem_density_s, sem_density_v, difficulty_s, difficulty_v, type_lrn_time, type_lrn_time_l, type_lrn_time_s)
+		    values
+		    (:p_ims_md_id, :p_int_type_s, :p_int_type_v, :p_int_level_s, :p_int_level_v, :p_sem_density_s, :p_sem_density_v, :p_difficulty_s, :p_difficulty_v, :p_type_lrn_time, :p_type_lrn_time_l, :p_type_lrn_time_s)
+		}
+
+		# Adds descriptions
+		foreach descrip $descrips {
+		    set p_ims_md_ed_de_id [db_nextval ims_md_educational_descrip_seq]
+		    set p_descrip_l [lindex $descrip 0]
+		    set p_descrip_s [lindex $descrip 1]
+
+		    db_dml add_new_descriptions {
+			insert into ims_md_educational_descrip (ims_md_ed_de_id, ims_md_id, descrip_l, descrip_s)
+			values
+			(:p_ims_md_ed_de_id, :p_ims_md_id, :p_descrip_l, :p_descrip_s)
+		    }
+		}
+
+		# Adds learningresourcetype
+		foreach lrt $learningresourcetypes {
+		    set p_ims_md_ed_lr_id [db_nextval ims_md_educational_lrt_seq]
+		    set p_lrt_s [lindex [lindex $lrt 0] 1]
+		    set p_lrt_v [lindex [lindex $lrt 1] 1]
+		    
+		    db_dml add_new_learningresourcetypes {
+			insert into ims_md_educational_lrt (ims_md_ed_lr_id, ims_md_id, lrt_s, lrt_v)
+			values
+			(:p_ims_md_ed_lr_id, :p_ims_md_id, :p_lrt_s, :p_lrt_v)
+		    }
+		}
+
+		# Adds intendedenduserrole
+		foreach ieur $intendedenduserroles {
+		    set p_ims_md_ed_ie_id [db_nextval ims_md_educational_ieur_seq]
+		    set p_ieur_s [lindex [lindex $ieur 0] 1]
+		    set p_ieur_v [lindex [lindex $ieur 1] 1]
+
+		    db_dml add_new_intendedenduserroles {
+			insert into ims_md_educational_ieur (ims_md_ed_ie_id, ims_md_id, ieur_s, ieur_v)
+			values
+			(:p_ims_md_ed_ie_id, :p_ims_md_id, :p_ieur_s, :p_ieur_v)
+		    }
+		}
+
+		# Adds context
+		foreach context $contexts {
+		    set p_ims_md_ed_co_id [db_nextval ims_md_educational_context_seq]
+		    set p_context_s [lindex [lindex $context 0] 1]
+		    set p_context_v [lindex [lindex $context 1] 1]
+		    
+		    db_dml add_new_context {
+			insert into ims_md_educational_context (ims_md_ed_co_id, ims_md_id, context_s, context_v)
+			values
+			(:p_ims_md_ed_co_id, :p_ims_md_id, :p_context_s, :p_context_v)
+		    }
+		}
+
+		# Adds typicalagerange
+		foreach tar $typicalageranges {
+		    set p_ims_md_ed_ta_id [db_nextval ims_md_educational_tar_seq]
+		    set p_tar_l [lindex $tar 0]
+		    set p_tar_s [lindex $tar 1]
+
+		    db_dml add_new_typicalagerange {
+			insert into ims_md_educational_tar (ims_md_ed_ta_id, ims_md_id, tar_l, tar_s)
+			values
+			(:p_ims_md_ed_ta_id, :p_ims_md_id, :p_tar_l, :p_tar_s)
+		    }
+		}
+
+		#  Adds Languages
+		foreach lang $languages {
+		    set p_ims_md_ed_la_id [db_nextval ims_md_educational_lang_seq]
+		    set p_language $lang
+		    
+		    db_dml add_new_language {
+			insert into ims_md_educational_lang (ims_md_ed_la_id, ims_md_id, language)
+			values
+			(:p_ims_md_ed_la_id, :p_ims_md_id, :p_language)
+		    }
+		}
+
+		# Rights
+		# cost, copyrightsandotherrights, description
+		set p_cost [lors::imsmd::mdRights -element cost -node $lom -prefix $prefix]
+		set p_caor [lors::imsmd::mdRights -element copyrightandotherrestrictions -node $lom -prefix $prefix]
+		set p_descrip [lors::imsmd::mdRights -element description -node $lom -prefix $prefix]
+		
+		set p_cost_s [lindex [lindex [lindex $p_cost 0] 0] 1]
+		set p_cost_v [lindex [lindex [lindex $p_cost 0] 1] 1]
+
+		set p_caor_s [lindex [lindex [lindex $p_caor 0] 0] 1]
+		set p_caor_v [lindex [lindex [lindex $p_caor 0] 1] 1]
+
+		set p_descrip_l [lindex [lindex $p_descrip 0] 0]
+		set p_descrip_s [lindex [lindex $p_descrip 0] 1]
+
+		db_dml add_new_rights {
+		    insert into ims_md_rights (ims_md_id, cost_s, cost_v, caor_s, caor_v, descrip_l, descrip_s)
+		    values
+		    (:p_ims_md_id, :p_cost_s, :p_cost_v, :p_caor_s, :p_caor_v, :p_descrip_l, :p_descrip_s)
+		}
+
+		# Relation
+
+		# Relation returns all in one large list
+		set relations  [lors::imsmd::mdRelation -node $lom -prefix $prefix]
+		
+		foreach relation $relations {
+		    
+		    set p_ims_md_re_id [db_nextval ims_md_relation_seq]
+		    set p_kind_s [lindex [lindex [lindex [lindex $relation 0] 0] 0] 1]
+		    set p_kind_v [lindex [lindex [lindex [lindex $relation 0] 0] 1] 1]
+		    
+		    # Adds kind
+		    db_dml add_new_relation {
+			insert into ims_md_relation (ims_md_re_id, ims_md_id, kind_s, kind_v)
+			values
+			(:p_ims_md_re_id, :p_ims_md_id, :p_kind_s, :p_kind_v)
+		    }
+		    
+		    set p_ims_md_re_re_id [db_nextval ims_md_relation_resource_seq]
+		    set p_descrip_l [lindex [lindex [lindex $relation 1] 0] 0]
+		    set p_descrip_s [lindex [lindex [lindex $relation 1] 0] 1]
+
+		    # adds description to resource
+		    db_dml add_new_relation_descrip {
+			insert into ims_md_relation_resource (ims_md_re_re_id, ims_md_re_id, identifier, descrip_l, descrip_s)
+			values
+			(:p_ims_md_re_re_id, :p_ims_md_re_id, null, :p_descrip_l, :p_descrip_s)
+		    }
+
+		    # catalogentries
+		    set catalogentries [lindex $relation 2]
+
+		    # adds catalogentries
+		    foreach catalogentry $catalogentries {
+
+			set p_ims_md_re_re_ca_id [db_nextval ims_md_relation_resource_catalog_seq]
+			set p_catalog [lindex $catalogentry 0]
+			set p_entry_l [lindex [lindex $catalogentry 1] 0]
+			set p_entry_s [lindex [lindex $catalogentry 1] 1]
+			
+			db_dml add_new_catalogentry {
+			    
+			    insert into ims_md_relation_resource_catalog (ims_md_re_re_ca_id, ims_md_re_re_id, catalog, entry_l, entry_s)
+			    values
+			    (:p_ims_md_re_re_ca_id, :p_ims_md_re_re_id, :p_catalog, :p_entry_l, :p_entry_s)
+			}
+		    }
+
+		}
+
+		# Annotation
+		
+		set annotations [lors::imsmd::mdAnnotation -node $lom -prefix $prefix]
+
+		foreach annotation $annotations {
+		    set p_ims_md_an_id [db_nextval ims_md_annotation_seq]
+		    set p_entity [lindex [lindex $annotation 0] 0]
+		    set p_date [lindex [lindex $annotation 1] 0]
+		    set p_date_l [lindex [lindex [lindex $annotation 1] 1] 0]
+		    set p_date_s [lindex [lindex [lindex $annotation 1] 1] 1]
+
+		    set p_descriptions [lindex $annotation 2]
+
+		    db_dml add_new_annotation {
+			insert into ims_md_annotation (ims_md_an_id, ims_md_id, entity, date, date_l, date_s)
+			values
+			(:p_ims_md_an_id, :p_ims_md_id, :p_entity, :p_date, :p_date_l, :p_date_s)
+		    }
+
+		    foreach description $p_descriptions {
+
+			set p_ims_md_an_de_id [db_nextval ims_md_annotation_descrip_seq]
+			set p_descrip_l [lindex $description 0]
+			set p_descrip_s [lindex $description 1]
+			
+			db_dml add_new_ann_descriptions {
+			    insert into ims_md_annotation_descrip (ims_md_an_de_id, ims_md_an_id, descrip_l, descrip_s)
+			    values
+			    (:p_ims_md_an_de_id, :p_ims_md_an_id, :p_descrip_l, :p_descrip_s)
+			}
+
+		    }
+
+
+		}
+
+		# Classification
+
+		set classifications [lors::imsmd::mdClassification -node $lom -prefix $prefix]
+
+		foreach class $classifications {
+
+		    # purpose
+		    set p_ims_md_cl_id [db_nextval ims_md_classification_seq]
+		    set p_purpose_s [lindex [lindex [lindex [lindex [lindex $class 0] 0] 0] 0] 1]
+		    set p_purpose_v [lindex [lindex [lindex [lindex [lindex $class 0] 0] 0] 1] 1]
+		    
+		    db_dml add_new_classification {
+			insert into ims_md_classification (ims_md_cl_id, ims_md_id, purpose_s, purpose_v)
+			values
+			(:p_ims_md_cl_id, :p_ims_md_id, :p_purpose_s, :p_purpose_v)
+		    }
+
+		    # description
+		    set descriptions [lindex [lindex $class 0] 1]
+
+		    foreach desc $descriptions {
+			set p_ims_md_cl_de_id [db_nextval ims_md_classification_desc_seq]
+			set p_descrip_l [lindex $desc 0]
+			set p_descrip_s [lindex $desc 1]
+			
+			db_dml add_new_description {
+			    insert into ims_md_classification_descrip (ims_md_cl_de_id, ims_md_cl_id, descrip_l, descrip_s)
+			    values
+			    (:p_ims_md_cl_de_id, :p_ims_md_cl_id, :p_descrip_l, :p_descrip_s)
+			}
+		    }
+
+		    # taxonpath
+		    set taxonpaths [lindex [lindex $class 0] 2]
+
+		    foreach taxonpath $taxonpaths {
+			
+			set p_source [lindex $taxonpath 0]
+			
+			set p_source_l [lindex [lindex $p_source 0] 0]
+			set p_source_s [lindex [lindex $p_source 0] 1]
+			set p_ims_md_cl_ta_id [db_nextval ims_md_classification_taxpath_seq]
+
+			set taxons [lindex $taxonpath 1]
+
+			db_dml add_new_taxonpaths {
+			    insert into ims_md_classification_taxpath (ims_md_cl_ta_id, ims_md_cl_id, source_l, source_v)
+			    values
+			    (:p_ims_md_cl_ta_id, :p_ims_md_cl_id, :p_source_l, :p_source_s)
+			}
+
+			foreach taxon $taxons {
+
+			    set p_ims_md_cl_ta_ta_id [db_nextval ims_md_classification_taxpath_taxon_seq]
+			    set p_hierarchy [lindex $taxon 0]
+			    set p_identifier [lindex $taxon 1]
+			    set p_entry_l  [lindex [lindex $taxon 2] 0]
+			    set p_entry_s  [lindex [lindex $taxon 2] 1]
+			    
+			    db_dml add_new_taxons {
+				insert into ims_md_classification_taxpath_taxon (ims_md_cl_ta_ta_id, ims_md_cl_ta_id, hierarchy, identifier, entry_l, entry_s)
+				values
+				(:p_ims_md_cl_ta_ta_id, :p_ims_md_cl_ta_id, :p_hierarchy, :p_identifier, :p_entry_l, :p_entry_s)
+			    }
+
+			}
+		    }        
+
+		    # keywords
+		    set keywords [lindex [lindex $class 0] 3]
+		    
+		    foreach keyword $keywords {
+			set p_ims_md_cl_ke_id [db_nextval  ims_md_classification_keyword_seq]
+			set p_keyword_l [lindex $keyword 0]
+			set p_keyword_s [lindex $keyword 1]
+			
+			db_dml add_new_keywords {
+			    insert into ims_md_classification_keyword (ims_md_cl_ke_id, ims_md_cl_id, keyword_l, keyword_s)
+			    values
+			    (:p_ims_md_cl_ke_id, :p_ims_md_cl_id, :p_keyword_l, :p_keyword_s)
+			}
+		    }
+		}
+	    } on_error {
+		ad_return_error "Transaction Error in LOM" "The error was: $errmsg"
+	    }
+ 
+    }
+
+
+    ad_proc -public addMetadata {
+	{-acs_object:required}
+	{-node:required}
+	{-dir {}}
+    } {
+	Adds metadata for a learning resource.
+	
+	@option acs_object acs object for resource (element) that contains metadata.
+	@option node XML node that contains the metadata
+	@option dir directory where the imsmanifest.xml file is located. This is use in the case the metadata is in a different file location (adlcp:location).
+	@author Ernie Ghiglione (ErnieG@mm.st).
+
+    } {
+	set p_ims_md_id $acs_object
+	set mdnode $node
+	set path_to_file $dir
+	#[lors::imsmd::getMDNode $manifest]
+	
+	set p_schema [lindex [lindex [lors::imsmd::getMDSchema $mdnode] 0] 0]
+	set p_schemaversion [lindex [lors::imsmd::getMDSchema $mdnode] 1]
+
+	set lom [lindex [lors::imsmd::getLOM $mdnode $path_to_file] 0]
+	set prefix [lindex [lors::imsmd::getLOM $mdnode $path_to_file] 1]
 
     
-    # inserts into db
-    db_transaction {
+	# inserts into db
+	db_transaction {
 
+	    # Checks if there's a LOM record
+	    if {$lom != 0} {
 
-        # Checks if there's a LOM record
-        if {$lom != 0} {
+		# Adds new MD record to ims_md
+		
+		lors::imsmd::addMDSchemaVersion -acs_object $p_ims_md_id -schema $p_schema -schemaversion $p_schemaversion
 
-        # Adds new MD record to ims_md
+		lors::imsmd::addLOM -lom $lom -prefix $prefix -acs_object $p_ims_md_id -dir $path_to_file
+
+	    }
+        }  on_error {
+	    ad_return_error "Transaction Error while Adding Metadata" "The error was: $errmsg"
+	}
+        return 1
+    }
+    
+
+    ad_proc -public addMDSchemaVersion {
+	{-acs_object:required}
+	{-schema:required}
+	{-schemaversion:required}
+
+    } {
+	Adds MD schema and schema version to db
+	If the metedata record already exists, then it deletes it
+	and creates a new one.
+
+	@param acs_object acs object for resource (element) that contains metadata.
+	@param schema MD schema used for the learning resource.
+	@param schemaversion MD schemaversion used for the learning resource.
+ 	@author Ernie Ghiglione (ErnieG@mm.st)
+    } {
+	set p_ims_md_id $acs_object 
+	set p_schema $schema
+	set p_schemaversion $schemaversion
+
+	# we check if the MD record we are about to insert already
+	# exists. If that is the case, then we delete it first.
+	# Yes, we are not versioning metadata (as I believe there's no
+	# real point on doing so.
+
+	lors::imsmd::delMD -acs_object $p_ims_md_id
+
+	db_transaction {
             db_dml add_md {
                 insert into ims_md (ims_md_id, schema, schemaversion)
                 values
                 (:p_ims_md_id, :p_schema, :p_schemaversion)
             }
-
-            # General
-
-        # Title
-        set titles [lors::imsmd::mdGeneral -element title -node $lom -prefix $prefix]
-
-        # Structure
-        set structure_s [lindex [lindex [lindex [lors::imsmd::mdGeneral -element structure -node $lom -prefix $prefix] 0] 0] 1]
-        set structure_v [lindex [lindex [lindex [lors::imsmd::mdGeneral -element structure -node $lom -prefix $prefix] 0] 1] 1]
-
-        # Aggregation level
-        set agg_level_s [lindex [lindex [lindex [lors::imsmd::mdGeneral -element aggregationlevel -node $lom -prefix $prefix] 0] 0] 1]
-        set agg_level_v [lindex [lindex [lindex [lors::imsmd::mdGeneral -element aggregationlevel  -node $lom -prefix $prefix] 0] 1] 1]
-
-        # Catalogentry
-        set catalogentries [lors::imsmd::mdGeneral -element catalogentry -node $lom -prefix $prefix]
-
-        # Languages
-        set languages [lors::imsmd::mdGeneral -element language -node $lom -prefix $prefix]
-
-        # Descriptions
-        set descriptions [lors::imsmd::mdGeneral -element description -node $lom -prefix $prefix]
-
-        # Keywords
-        set keywords [lors::imsmd::mdGeneral -element keyword -node $lom -prefix $prefix]
-
-        # Coverages
-        set coverages [lors::imsmd::mdGeneral -element coverage -node $lom -prefix $prefix]
-
-        # Now we insert the values into the DB
-        db_dml add_new_general {
-            insert into ims_md_general (ims_md_id, structure_s, structure_v, agg_level_s, agg_level_v)
-            values
-            (:p_ims_md_id, :structure_s, :structure_v, :agg_level_s, :agg_level_v)
-        }
-
-
-        # Adds General Titles
-
-        foreach title $titles {
-            set p_ims_md_ge_ti_id [db_nextval ims_md_general_title_seq]
-            set p_title_l [lindex $title 0]
-            set p_title_s [lindex $title 1]
-            
-            db_dml add_new_general_titles {
-                insert into ims_md_general_title (ims_md_ge_ti_id, ims_md_id, title_l, title_s)
-                values
-                (:p_ims_md_ge_ti_id, :p_ims_md_id, :p_title_l, :p_title_s)
-            }
-
-        }
-
-        # Adds General Catalog Entries
-        foreach catalogentry $catalogentries {
-            set p_ims_md_ge_cata_id [db_nextval ims_md_general_cata_seq]
-            set p_catalog [lindex $catalogentry 0]
-            set p_entry_l [lindex [lindex $catalogentry 1] 0]
-            set p_entry_s [lindex [lindex $catalogentry 1] 1]
-            
-            db_dml add_new_general_catalogentries {
-                
-                insert into ims_md_general_cata (ims_md_ge_cata_id, ims_md_id, catalog, entry_l, entry_s)
-                values
-                (:p_ims_md_ge_cata_id, :p_ims_md_id, :p_catalog, :p_entry_l, :p_entry_s)
-            }
-        }
-
-        # Adds General Languages
-        foreach language $languages {
-            set p_ims_md_ge_lang_id [db_nextval ims_md_general_lang_seq]
-
-            db_dml add_new_general_language {
-                insert into ims_md_general_lang (ims_md_ge_lang_id, ims_md_id, language)
-                values
-                (:p_ims_md_ge_lang_id, :p_ims_md_id, :language)
-            }
-        }
-
-        # Adds General Description
-        foreach description $descriptions {
-            set p_ims_md_ge_desc_id [db_nextval ims_md_general_desc_seq]
-            set p_descrip_l [lindex $description 0]
-            set p_descrip_s [lindex $description 1]
-            
-            db_dml add_new_general_description {
-                insert into ims_md_general_desc (ims_md_ge_desc_id, ims_md_id, descrip_l, descrip_s)
-                values
-                (:p_ims_md_ge_desc_id, :p_ims_md_id, :p_descrip_l, :p_descrip_s)
-            }
-        }
-        
-        # Adds General Keywords
-        foreach keyword $keywords {
-            set p_ims_md_ge_key_id [db_nextval ims_md_general_key_seq]
-            set p_keyword_l [lindex $keyword 0]
-            set p_keyword_s [lindex $keyword 1]
-            
-            db_dml add_new_general_keyword {
-                insert into ims_md_general_key (ims_md_ge_key_id, ims_md_id, keyword_l, keyword_s)
-                values
-                (:p_ims_md_ge_key_id, :p_ims_md_id, :p_keyword_l, :p_keyword_s)
-            }
-        }
-
-        # Adds General Coverage
-        foreach coverage $coverages {
-            set p_ims_md_ge_cove_id [db_nextval ims_md_general_cover_seq]
-            set p_cover_l [lindex $coverage 0]
-            set p_cover_s [lindex $coverage 1]
-            
-            db_dml add_new_general_coverage {
-                insert into ims_md_general_cover (ims_md_ge_cove_id, ims_md_id, cover_l, cover_s)
-                values
-                (:p_ims_md_ge_cove_id, :p_ims_md_id, :p_cover_l, :p_cover_s)
-            }
-        }
-
-        # Lifecycle
-
-        # Version
-        set version [lors::imsmd::mdLifeCycle -element version -node $lom -prefix $prefix]
-        set version_l [lindex [lindex $version 0] 0]
-        set version_s [lindex [lindex $version 0] 1]
-        
-        # Status
-        set status [lors::imsmd::mdLifeCycle -element status -node $lom -prefix $prefix]
-        set status_s [lindex [lindex [lindex $status 0] 0] 1]
-        set status_v [lindex [lindex [lindex $status 0] 1] 1]
-        
-        # Contribute
-        set contributes [lors::imsmd::mdLifeCycle -element contribute -node $lom -prefix $prefix]
-        
-        # Adds Lifecycle Version and Status
-        db_dml add_new_lifecycle {
-            insert into ims_md_life_cycle (ims_md_id, version_l, version_s, status_s, status_v)
-            values
-            (:p_ims_md_id, :version_l, :version_s, :status_s, :status_v)
-        }
-
-        # Adds Lifecycle Contributes
-        foreach contribute $contributes {
-            set p_ims_md_lf_cont_id [db_nextval ims_md_life_cycle_contrib_seq]
-            set p_role_s [lindex [lindex [lindex $contribute 0] 0] 1]
-            set p_role_v [lindex [lindex [lindex $contribute 0] 1] 1]
-            set p_cont_date [lindex [lindex $contribute 2] 0]
-            set p_cont_date_l [lindex [lindex [lindex $contribute 2] 1] 0]
-            set p_cont_date_s [lindex [lindex [lindex $contribute 2] 1] 1]
-            
-            set p_entities [lindex $contribute 1]
-            
-            db_dml add_new_lifecycle_contrib {
-                insert into ims_md_life_cycle_contrib (ims_md_lf_cont_id, ims_md_id, role_s, role_v, cont_date, cont_date_l, cont_date_s)
-                values
-                (:p_ims_md_lf_cont_id, :p_ims_md_id, :p_role_s, :p_role_v, :p_cont_date, :p_cont_date_l, :p_cont_date_s)
-            }
-
-
-            foreach entity $p_entities {
-                set p_ims_md_lf_cont_enti_id [db_nextval ims_md_life_cycle_contrib_entity_seq]
-                set p_entity $entity
-                
-                db_dml add_new_lifecycle_contrib_entity {
-                    insert into ims_md_life_cycle_contrib_entity (ims_md_lf_cont_enti_id, ims_md_lf_cont_id, entity)
-                    values
-                    (:p_ims_md_lf_cont_enti_id, :p_ims_md_lf_cont_id, :p_entity)
-                }
-            }
-            
-        }
-        
-        # Metadata
-
-        # Language
-        set p_language [lors::imsmd::mdMetadata -element language -node $lom -prefix $prefix]
-        
-        # Catalogentry
-        set catalogentries [lors::imsmd::mdMetadata -element catalogentry -node $lom -prefix $prefix]
-        
-        # Contribute
-        set contributes [lors::imsmd::mdMetadata -element contribute -node $lom -prefix $prefix]
-        
-        # Metadatascheme
-        set metadataschemes [lors::imsmd::mdMetadata -element metadatascheme -node $lom -prefix $prefix]
-
-        # Adds Metadata Language
-        db_dml add_new_metadata {
-            insert into ims_md_metadata (ims_md_id, language)
-            values
-            (:p_ims_md_id, :p_language)
-        }
-
-        # Adds Catalogentry
-        foreach catalogentry $catalogentries {
-            set p_ims_md_md_cata_id [db_nextval ims_md_metadata_cata_seq]
-            set p_catalog [lindex $catalogentry 0]
-            set p_entry_l [lindex [lindex $catalogentry 1] 0]
-            set p_entry_s [lindex [lindex $catalogentry 1] 1]
-
-            db_dml add_new_metadata_catalogentries {
-                insert into ims_md_metadata_cata (ims_md_md_cata_id, ims_md_id, catalog, entry_l, entry_s)
-                values
-                (:p_ims_md_md_cata_id, :p_ims_md_id, :p_catalog, :p_entry_l, :p_entry_s)
-            }
-        }
-
-        # Adds Lifecycle Contributes
-        foreach contribute $contributes {
-            set p_ims_md_md_cont_id [db_nextval ims_md_metadata_contrib_seq]
-            set p_role_s [lindex [lindex [lindex $contribute 0] 0] 1]
-            set p_role_v [lindex [lindex [lindex $contribute 0] 1] 1]
-            set p_cont_date [lindex [lindex $contribute 2] 0]
-            set p_cont_date_l [lindex [lindex [lindex $contribute 2] 1] 0]
-            set p_cont_date_s [lindex [lindex [lindex $contribute 2] 1] 1]
-
-            set p_ims_md_md_cont_enti_id [db_nextval ims_md_metadata_contrib_entity_seq]
-            set p_entity [lindex [lindex $contribute 1] 0]
-
-            db_dml add_new_metadata_contrib {
-                insert into ims_md_metadata_contrib (ims_md_md_cont_id, ims_md_id, role_s, role_v, cont_date, cont_date_l, cont_date_s)
-                values
-                (:p_ims_md_md_cont_id, :p_ims_md_id, :p_role_s, :p_role_v, :p_cont_date, :p_cont_date_l, :p_cont_date_s)
-            }
-
-            db_dml add_new_metadata_contrib_entity {
-                insert into ims_md_metadata_contrib_entity (ims_md_md_cont_enti_id, ims_md_md_cont_id, entity)
-                values
-                (:p_ims_md_md_cont_enti_id, :p_ims_md_md_cont_id, :p_entity)
-            }
-
-        }
-
-        # Adds Metadata Schemes
-        foreach metadatascheme $metadataschemes {
-            set p_scheme $metadatascheme
-            
-            db_dml add_new_metadata_metadatascheme {
-                insert into ims_md_metadata_scheme (ims_md_id, scheme)
-                values
-                (:p_ims_md_id, :p_scheme)
-            }
-        }
-
-        # Technical
-
-        # format
-        set formats [lors::imsmd::mdTechnical -element format -node $lom -prefix $prefix]
-        
-        # location
-        set locations [lors::imsmd::mdTechnical -element location -node $lom -prefix $prefix]
-
-        # size, installation remarks, otherplatformrequirements, duration
-        set p_size [lors::imsmd::mdTechnical -element size -node $lom -prefix $prefix]
-        set p_instl_rmks [lors::imsmd::mdTechnical -element installationremarks -node $lom -prefix $prefix]
-        set p_instl_rmks_l [lindex [lindex $p_instl_rmks 0] 0]
-        set p_instl_rmks_s [lindex [lindex $p_instl_rmks 0] 1]
-        set p_otr_plt [lors::imsmd::mdTechnical -element otherplatformrequirements -node $lom -prefix $prefix]
-        set p_otr_plt_l [lindex [lindex $p_otr_plt 0] 0]
-        set p_otr_plt_s [lindex [lindex $p_otr_plt 0] 1]
-        set p_durat [lors::imsmd::mdTechnical -element duration -node $lom -prefix $prefix]
-        set p_duration [lindex $p_durat 0]
-        set p_duration_l [lindex [lindex $p_durat 1] 0]
-        set p_duration_s [lindex [lindex $p_durat 1] 1]
-
-        # requirement
-        set requirements [lors::imsmd::mdTechnical -element requirement -node $lom -prefix $prefix]
-
-        # Adds Technical size, installation remarks, otherplatformrequirements, duration
-        db_dml add_new_technical {
-            insert into ims_md_technical (ims_md_id, t_size, instl_rmrks_l, instl_rmrks_s, otr_plt_l, otr_plt_s, duration, duration_l, duration_s)
-            values
-            (:p_ims_md_id, :p_size, :p_instl_rmks_l, :p_instl_rmks_s, :p_otr_plt_l, :p_otr_plt_s, :p_duration, :p_duration_l, :p_duration_s)
-        }
-
-        # Adds Technical Format
-
-        foreach format $formats {
-            set p_ims_md_te_fo_id [db_nextval ims_md_technical_format_seq]
-            set p_format $format
-            
-            db_dml add_new_technical_format {
-                insert into ims_md_technical_format (ims_md_te_fo_id, ims_md_id, format)
-                values
-                (:p_ims_md_te_fo_id, :p_ims_md_id, :p_format)
-            }
-        }
-        
-        # Adds Technical Location
-        
-        foreach location $locations {
-            set p_ims_md_te_lo_id [db_nextval ims_md_technical_location_seq]
-            set p_type [lindex $location 1]
-            set p_location [lindex $location 0]
-
-            db_dml add_new_technical_location {
-                insert into ims_md_technical_location (ims_md_te_lo_id, ims_md_id, type, location)
-                values
-                (:p_ims_md_te_lo_id, :p_ims_md_id, :p_type, :p_location)
-            }
-        }
-
-        # Adds Technical Requirements
-
-        foreach requirement $requirements {
-            set p_ims_md_te_rq_id [db_nextval ims_md_technical_requirement_seq]
-            set p_type_s [lindex [lindex [lindex $requirement 0] 0] 1]
-            set p_type_v [lindex [lindex [lindex $requirement 0] 1] 1]
-            set p_name_s [lindex [lindex [lindex $requirement 1] 0] 1]
-            set p_name_v [lindex [lindex [lindex $requirement 1] 1] 1]
-            set p_min_version [lindex $requirement 2]
-            set p_max_version [lindex $requirement 3]
-
-            db_dml add_new_technical_requirement {
-                insert into ims_md_technical_requirement (ims_md_te_rq_id, ims_md_id, type_s, type_v, name_s, name_v, min_version, max_version)
-                values
-                (:p_ims_md_te_rq_id, :p_ims_md_id, :p_type_s, :p_type_v, :p_name_s, :p_name_v, :p_min_version, :p_max_version)
-            }
-        }
-
-
-        # Educational
-
-        # interactivitytype, interactivitylevel, semanticdensity, difficulty, typical_learning_time, description
-        set p_int_type [lors::imsmd::mdEducational -element interactivitytype -node $lom -prefix $prefix]
-        set p_int_type_s [lindex [lindex [lindex $p_int_type 0] 0] 1]
-        set p_int_type_v [lindex [lindex [lindex $p_int_type 0] 1] 1]
-        set p_int_level [lors::imsmd::mdEducational -element interactivitylevel -node $lom -prefix $prefix]
-        set p_int_level_s [lindex [lindex [lindex $p_int_level 0] 0] 1]
-        set p_int_level_v [lindex [lindex [lindex $p_int_level 0] 1] 1]
-        set p_sem_density [lors::imsmd::mdEducational -element semanticdensity -node $lom -prefix $prefix]
-        set p_sem_density_s [lindex [lindex [lindex $p_sem_density 0] 0] 1]
-        set p_sem_density_v [lindex [lindex [lindex $p_sem_density 0] 1] 1]
-        set p_difficulty [lors::imsmd::mdEducational -element difficulty -node $lom -prefix $prefix]
-        set p_difficulty_s [lindex [lindex [lindex $p_difficulty 0] 0] 1]
-        set p_difficulty_v [lindex [lindex [lindex $p_difficulty 0] 1] 1]
-        set p_type_lrn_tim [lors::imsmd::mdEducational -element typicallearningtime -node $lom -prefix $prefix]
-        set p_type_lrn_time [lindex $p_type_lrn_tim 0]
-        set p_type_lrn_time_l [lindex [lindex $p_type_lrn_tim 1] 0]
-        set p_type_lrn_time_s [lindex [lindex $p_type_lrn_tim 1] 1]
-        set descrips [lors::imsmd::mdEducational -element description -node $lom -prefix $prefix]
-
-        # learningresourcetype
-        set learningresourcetypes [lors::imsmd::mdEducational -element learningresourcetype -node $lom -prefix $prefix]
-
-
-        # intendedenduserrole
-        set intendedenduserroles [lors::imsmd::mdEducational -element intendedenduserrole -node $lom -prefix $prefix]
-
-        # context
-        set contexts  [lors::imsmd::mdEducational -element context -node $lom -prefix $prefix]
-
-        # typicalagerange
-        set typicalageranges [lors::imsmd::mdEducational -element typicalagerange -node $lom -prefix $prefix]
-
-        # language 
-        set languages [lors::imsmd::mdEducational -element language -node $lom -prefix $prefix]
-
-
-        # Adds Educational interactivitytype, interactivitylevel, semanticdensity, difficulty, typical_learning_time
-        db_dml add_new_educational {
-            insert into ims_md_educational (ims_md_id, int_type_s, int_type_v, int_level_s, int_level_v, sem_density_s, sem_density_v, difficulty_s, difficulty_v, type_lrn_time, type_lrn_time_l, type_lrn_time_s)
-            values
-            (:p_ims_md_id, :p_int_type_s, :p_int_type_v, :p_int_level_s, :p_int_level_v, :p_sem_density_s, :p_sem_density_v, :p_difficulty_s, :p_difficulty_v, :p_type_lrn_time, :p_type_lrn_time_l, :p_type_lrn_time_s)
-        }
-
-        # Adds descriptions
-        foreach descrip $descrips {
-            set p_ims_md_ed_de_id [db_nextval ims_md_educational_descrip_seq]
-            set p_descrip_l [lindex $descrip 0]
-            set p_descrip_s [lindex $descrip 1]
-
-            db_dml add_new_descriptions {
-                insert into ims_md_educational_descrip (ims_md_ed_de_id, ims_md_id, descrip_l, descrip_s)
-                values
-                (:p_ims_md_ed_de_id, :p_ims_md_id, :p_descrip_l, :p_descrip_s)
-            }
-        }
-
-        # Adds learningresourcetype
-        foreach lrt $learningresourcetypes {
-            set p_ims_md_ed_lr_id [db_nextval ims_md_educational_lrt_seq]
-            set p_lrt_s [lindex [lindex $lrt 0] 1]
-            set p_lrt_v [lindex [lindex $lrt 1] 1]
-            
-            db_dml add_new_learningresourcetypes {
-                insert into ims_md_educational_lrt (ims_md_ed_lr_id, ims_md_id, lrt_s, lrt_v)
-                values
-                (:p_ims_md_ed_lr_id, :p_ims_md_id, :p_lrt_s, :p_lrt_v)
-            }
-        }
-
-        # Adds intendedenduserrole
-        foreach ieur $intendedenduserroles {
-            set p_ims_md_ed_ie_id [db_nextval ims_md_educational_ieur_seq]
-            set p_ieur_s [lindex [lindex $ieur 0] 1]
-            set p_ieur_v [lindex [lindex $ieur 1] 1]
-
-            db_dml add_new_intendedenduserroles {
-                insert into ims_md_educational_ieur (ims_md_ed_ie_id, ims_md_id, ieur_s, ieur_v)
-                values
-                (:p_ims_md_ed_ie_id, :p_ims_md_id, :p_ieur_s, :p_ieur_v)
-            }
-        }
-
-        # Adds context
-        foreach context $contexts {
-            set p_ims_md_ed_co_id [db_nextval ims_md_educational_context_seq]
-            set p_context_s [lindex [lindex $context 0] 1]
-            set p_context_v [lindex [lindex $context 1] 1]
-            
-            db_dml add_new_context {
-                insert into ims_md_educational_context (ims_md_ed_co_id, ims_md_id, context_s, context_v)
-                values
-                (:p_ims_md_ed_co_id, :p_ims_md_id, :p_context_s, :p_context_v)
-            }
-        }
-
-        # Adds typicalagerange
-        foreach tar $typicalageranges {
-            set p_ims_md_ed_ta_id [db_nextval ims_md_educational_tar_seq]
-            set p_tar_l [lindex $tar 0]
-            set p_tar_s [lindex $tar 1]
-
-            db_dml add_new_typicalagerange {
-                insert into ims_md_educational_tar (ims_md_ed_ta_id, ims_md_id, tar_l, tar_s)
-                values
-                (:p_ims_md_ed_ta_id, :p_ims_md_id, :p_tar_l, :p_tar_s)
-            }
-        }
-
-        #  Adds Languages
-        foreach lang $languages {
-            set p_ims_md_ed_la_id [db_nextval ims_md_educational_lang_seq]
-            set p_language $lang
-            
-            db_dml add_new_language {
-                insert into ims_md_educational_lang (ims_md_ed_la_id, ims_md_id, language)
-                values
-                (:p_ims_md_ed_la_id, :p_ims_md_id, :p_language)
-            }
-        }
-
-        # Rights
-        # cost, copyrightsandotherrights, description
-        set p_cost [lors::imsmd::mdRights -element cost -node $lom -prefix $prefix]
-        set p_caor [lors::imsmd::mdRights -element copyrightandotherrestrictions -node $lom -prefix $prefix]
-        set p_descrip [lors::imsmd::mdRights -element description -node $lom -prefix $prefix]
-        
-        set p_cost_s [lindex [lindex [lindex $p_cost 0] 0] 1]
-        set p_cost_v [lindex [lindex [lindex $p_cost 0] 1] 1]
-
-        set p_caor_s [lindex [lindex [lindex $p_caor 0] 0] 1]
-        set p_caor_v [lindex [lindex [lindex $p_caor 0] 1] 1]
-
-        set p_descrip_l [lindex [lindex $p_descrip 0] 0]
-        set p_descrip_s [lindex [lindex $p_descrip 0] 1]
-
-        db_dml add_new_rights {
-            insert into ims_md_rights (ims_md_id, cost_s, cost_v, caor_s, caor_v, descrip_l, descrip_s)
-            values
-            (:p_ims_md_id, :p_cost_s, :p_cost_v, :p_caor_s, :p_caor_v, :p_descrip_l, :p_descrip_s)
-        }
-
-        # Relation
-
-        # Relation returns all in one large list
-        set relations  [lors::imsmd::mdRelation -node $lom -prefix $prefix]
-        
-        foreach relation $relations {
-            
-            set p_ims_md_re_id [db_nextval ims_md_relation_seq]
-            set p_kind_s [lindex [lindex [lindex [lindex $relation 0] 0] 0] 1]
-            set p_kind_v [lindex [lindex [lindex [lindex $relation 0] 0] 1] 1]
-            
-            # Adds kind
-            db_dml add_new_relation {
-                insert into ims_md_relation (ims_md_re_id, ims_md_id, kind_s, kind_v)
-                values
-                (:p_ims_md_re_id, :p_ims_md_id, :p_kind_s, :p_kind_v)
-            }
-            
-            set p_ims_md_re_re_id [db_nextval ims_md_relation_resource_seq]
-            set p_descrip_l [lindex [lindex [lindex $relation 1] 0] 0]
-            set p_descrip_s [lindex [lindex [lindex $relation 1] 0] 1]
-
-            # adds description to resource
-            db_dml add_new_relation_descrip {
-                insert into ims_md_relation_resource (ims_md_re_re_id, ims_md_re_id, identifier, descrip_l, descrip_s)
-                values
-                (:p_ims_md_re_re_id, :p_ims_md_re_id, null, :p_descrip_l, :p_descrip_s)
-            }
-
-            # catalogentries
-            set catalogentries [lindex $relation 2]
-
-            # adds catalogentries
-            foreach catalogentry $catalogentries {
-
-                set p_ims_md_re_re_ca_id [db_nextval ims_md_relation_resource_catalog_seq]
-                set p_catalog [lindex $catalogentry 0]
-                set p_entry_l [lindex [lindex $catalogentry 1] 0]
-                set p_entry_s [lindex [lindex $catalogentry 1] 1]
-                
-                db_dml add_new_catalogentry {
-                    
-                    insert into ims_md_relation_resource_catalog (ims_md_re_re_ca_id, ims_md_re_re_id, catalog, entry_l, entry_s)
-                    values
-                    (:p_ims_md_re_re_ca_id, :p_ims_md_re_re_id, :p_catalog, :p_entry_l, :p_entry_s)
-                }
-            }
-
-        }
-
-        # Annotation
-        
-        set annotations [lors::imsmd::mdAnnotation -node $lom -prefix $prefix]
-
-        foreach annotation $annotations {
-            set p_ims_md_an_id [db_nextval ims_md_annotation_seq]
-            set p_entity [lindex [lindex $annotation 0] 0]
-            set p_date [lindex [lindex $annotation 1] 0]
-            set p_date_l [lindex [lindex [lindex $annotation 1] 1] 0]
-            set p_date_s [lindex [lindex [lindex $annotation 1] 1] 1]
-
-            set p_descriptions [lindex $annotation 2]
-
-            db_dml add_new_annotation {
-                insert into ims_md_annotation (ims_md_an_id, ims_md_id, entity, date, date_l, date_s)
-                values
-                (:p_ims_md_an_id, :p_ims_md_id, :p_entity, :p_date, :p_date_l, :p_date_s)
-            }
-
-            foreach description $p_descriptions {
-
-                set p_ims_md_an_de_id [db_nextval ims_md_annotation_descrip_seq]
-                set p_descrip_l [lindex $description 0]
-                set p_descrip_s [lindex $description 1]
-                
-                db_dml add_new_ann_descriptions {
-                    insert into ims_md_annotation_descrip (ims_md_an_de_id, ims_md_an_id, descrip_l, descrip_s)
-                    values
-                    (:p_ims_md_an_de_id, :p_ims_md_an_id, :p_descrip_l, :p_descrip_s)
-                }
-
-            }
-
-
-        }
-
-        # Classification
-
-        set classifications [lors::imsmd::mdClassification -node $lom -prefix $prefix]
-
-        foreach class $classifications {
-
-            # purpose
-            set p_ims_md_cl_id [db_nextval ims_md_classification_seq]
-            set p_purpose_s [lindex [lindex [lindex [lindex [lindex $class 0] 0] 0] 0] 1]
-            set p_purpose_v [lindex [lindex [lindex [lindex [lindex $class 0] 0] 0] 1] 1]
-            
-            db_dml add_new_classification {
-                insert into ims_md_classification (ims_md_cl_id, ims_md_id, purpose_s, purpose_v)
-                values
-                (:p_ims_md_cl_id, :p_ims_md_id, :p_purpose_s, :p_purpose_v)
-            }
-
-            # description
-            set descriptions [lindex [lindex $class 0] 1]
-
-            foreach desc $descriptions {
-                set p_ims_md_cl_de_id [db_nextval ims_md_classification_desc_seq]
-                set p_descrip_l [lindex $desc 0]
-                set p_descrip_s [lindex $desc 1]
-                
-                db_dml add_new_description {
-                    insert into ims_md_classification_descrip (ims_md_cl_de_id, ims_md_cl_id, descrip_l, descrip_s)
-                    values
-                    (:p_ims_md_cl_de_id, :p_ims_md_cl_id, :p_descrip_l, :p_descrip_s)
-                }
-            }
-
-            # taxonpath
-            set taxonpaths [lindex [lindex $class 0] 2]
-
-            foreach taxonpath $taxonpaths {
-                
-                set p_source [lindex $taxonpath 0]
-                
-                set p_source_l [lindex [lindex $p_source 0] 0]
-                set p_source_s [lindex [lindex $p_source 0] 1]
-                set p_ims_md_cl_ta_id [db_nextval ims_md_classification_taxpath_seq]
-
-                set taxons [lindex $taxonpath 1]
-
-                db_dml add_new_taxonpaths {
-                    insert into ims_md_classification_taxpath (ims_md_cl_ta_id, ims_md_cl_id, source_l, source_v)
-                    values
-                    (:p_ims_md_cl_ta_id, :p_ims_md_cl_id, :p_source_l, :p_source_s)
-                }
-
-                foreach taxon $taxons {
-
-                    set p_ims_md_cl_ta_ta_id [db_nextval ims_md_classification_taxpath_taxon_seq]
-                    set p_hierarchy [lindex $taxon 0]
-                    set p_identifier [lindex $taxon 1]
-                    set p_entry_l  [lindex [lindex $taxon 2] 0]
-                    set p_entry_s  [lindex [lindex $taxon 2] 1]
-                    
-                    db_dml add_new_taxons {
-                        insert into ims_md_classification_taxpath_taxon (ims_md_cl_ta_ta_id, ims_md_cl_ta_id, hierarchy, identifier, entry_l, entry_s)
-                        values
-                        (:p_ims_md_cl_ta_ta_id, :p_ims_md_cl_ta_id, :p_hierarchy, :p_identifier, :p_entry_l, :p_entry_s)
-                    }
-
-                }
-            }        
-
-            # keywords
-            set keywords [lindex [lindex $class 0] 3]
-            
-            foreach keyword $keywords {
-                set p_ims_md_cl_ke_id [db_nextval  ims_md_classification_keyword_seq]
-                set p_keyword_l [lindex $keyword 0]
-                set p_keyword_s [lindex $keyword 1]
-                
-                db_dml add_new_keywords {
-                    insert into ims_md_classification_keyword (ims_md_cl_ke_id, ims_md_cl_id, keyword_l, keyword_s)
-                    values
-                    (:p_ims_md_cl_ke_id, :p_ims_md_cl_id, :p_keyword_l, :p_keyword_s)
-                }
-            }
-        }
+	} on_error {
+	    ad_return_error "Transaction Error in MD schema shemaversion " "The error was: $errmsg"
+	}
     }
-        }
-        return 1
+
+    ad_proc -public delMD {
+	{-acs_object:required}
+    } {
+	Deletes an MD record (deletes it ALL from the db).
+	
+	@param acs_object the acs object metadata we are deleting.
+ 	@author Ernie Ghiglione (ErnieG@mm.st).
+    } {
+	set p_ims_md_id $acs_object 
+
+	# if record exists...
+	if {[db_0or1row check_md_record {select ims_md_id from ims_md where ims_md_id = :p_ims_md_id}]} {
+
+	    # ... then delete it
+	    db_transaction {
+		db_dml add_md {
+		    delete from ims_md where ims_md_id = :p_ims_md_id
+		}
+	    } on_error {
+		ad_return_error "Transaction deleting MD record" "The error was: $errmsg"
+	    }
+	} 
+
     }
-    
+
+
+
+
+
+
     
 } 
+
+
+
+namespace eval lors::imsmd::xml {
+
+### Generic XML creating tDOM functions 
+# Created just to make the super-tedious XML creation with tDOM a bit
+# easier
+
+    ad_proc -public newElement {
+	{-owner:required}
+	{-name:required}
+    } {
+	Creates an XML element node
+	
+	@param owner owner node 
+	@param name element name
+ 	@author Ernie Ghiglione (ErnieG@mm.st).
+    } {
+
+	return [[$owner ownerDocument] createElement $name]
+
+    }
+
+    ad_proc -public newElementText {
+	{-owner:required}
+	{-name:required}
+	{-text:required}
+    } {
+	Creates an XML element with a text node
+	
+	@param owner owner node 
+	@param name element name
+	@param text text
+ 	@author Ernie Ghiglione (ErnieG@mm.st).
+    } {
+	
+	set node_text [lors::imsmd::xml::newText -owner $owner -text $text]
+	set node [lors::imsmd::xml::newElement -owner $owner -name $name]
+	$node appendChild $node_text
+    
+	return $node
+
+    }
+
+    ad_proc -public newText {
+	{-owner:required}
+	{-text:required}
+    } {
+	Creates an XML Text node
+	
+	@param owner owner node 
+	@param text text
+ 	@author Ernie Ghiglione (ErnieG@mm.st).
+    } {
+
+	return [[$owner ownerDocument] createTextNode $text]
+
+    }
+
+    ad_proc -public newComment {
+	{-owner:required}
+	{-comment:required}
+    } {
+	Creates an XML Text node
+	
+	@param owner owner node 
+	@param comment Comment
+ 	@author Ernie Ghiglione (ErnieG@mm.st).
+    } {
+
+	return [[$owner ownerDocument] createComment $comment]
+
+    }
+
+
+### End Generic XML creating tDOM functions
+}
+
+
+
+
+namespace eval lors::imsmd::create {
+
+### IMS MD XML creation
+
+
+## LOM data types
+
+# langstring
+
+    ad_proc -public newLangString {
+	{-owner:required}
+	{-lang:required}
+	{-string:required}
+    } {
+	Creates an LangString data type XML node
+	
+	@param owner owner node 
+	@param lang language
+	@param string String
+ 	@author Ernie Ghiglione (ErnieG@mm.st).
+    } {
+
+	set ls_string [lors::imsmd::xml::newText -owner $owner -text $string]
+	set lang_string_node [lors::imsmd::xml::newElement -owner $owner -name langstring]
+	$lang_string_node setAttribute xml:lang $lang
+	$lang_string_node appendChild $ls_string
+	return $lang_string_node
+
+    }
+
+
+    ad_proc -public md {
+	{-owner:required}
+	{-schema:required}
+	{-schemaversion:required}
+	{-lom:required}
+    } {
+	Creates a metadata node. 
+
+	@param owner Owner node
+	@param schema schema
+	@param schemaversion schemaversion
+	@param lom lom node
+ 	@author Ernie Ghiglione (ErnieG@mm.st).
+    } {
+
+	set metadata [lors::imsmd::xml::newElement -owner $owner -name metadata]
+
+	$metadata appendChild [lors::imsmd::xml::newComment -owner $owner -comment "Generated by LORSm"]
+
+	set schema [lors::imsmd::xml::newElementText -owner $owner -name schema -text $schema]
+	set schemaversion [lors::imsmd::xml::newElementText -owner $owner -name schemaversion -text $schemaversion]
+
+	$metadata appendChild $schema
+	$metadata appendChild $schemaversion
+	$metadata appendChild $lom
+	
+	return $metadata
+
+    }
+
+
+    ad_proc -public lom {
+	{-owner:required}
+	{-general {}}
+	{-lifecycle {}}
+	{-metametadata {}}
+	{-technical {}}
+	{-educational {}}
+	{-rights {}}
+	{-relation {}}
+	{-annotation {}}
+	{-classification {}}
+    } {
+	Creates a LOM node.
+	It puts together all the nodes and returns a LOMs node.
+	
+	@param owner ownerDocument node 
+	@param general General node
+	@param lifecycle Lifecycle node
+	@param metametadata Metametadata node
+	@param technical Technical node
+	@param educational Educational node
+	@param rights Rights node
+	@param relation Relation node
+	@param annotation Annotation node
+	@param classification Classification node
+
+ 	@author Ernie Ghiglione (ErnieG@mm.st).
+    } {
+
+	set lom [lors::imsmd::xml::newElement -owner $owner -name lom]
+
+	if {![empty_string_p $general]} {
+	    $lom appendChild $general
+	}
+
+	if {![empty_string_p $lifecycle]} {
+	    $lom appendChild $lifecycle
+	}
+
+	if {![empty_string_p $metametadata]} {
+	    $lom appendChild $metametadata
+	}
+
+	if {![empty_string_p $technical]} {
+	    $lom appendChild $technical
+	}
+
+	if {![empty_string_p $educational]} {
+	    $lom appendChild $educational
+	}
+
+	if {![empty_string_p $rights]} {
+	    $lom appendChild $rights
+	}
+
+	if {![empty_string_p $relation]} {
+	    $lom appendChild $relation
+	}
+	
+	if {![empty_string_p $annotation]} {
+	    $lom appendChild $annotation
+	}
+	
+	if {![empty_string_p $classification]} {
+	    $lom appendChild $classification
+	}
+
+	return $lom
+	
+
+    }
+
+
+    ad_proc -public lom_general {
+	{-owner:required}
+	{-identifier {}}
+	{-title {}}
+	{-catalogentry {}}
+	{-language {}}
+	{-description {}}
+	{-keyword {}}
+	{-coverage {}}
+	{-structure {}}
+	{-aggregationlevel {}}
+    } {
+	Creates a LOM general node.
+	It puts together all the general nodes
+
+	refer to http://www.imsglobal.org/metadata/imsmdv1p2p1/imsmd_bindv1p2p1.html
+	for further details. 
+
+
+	@param owner ownerDocument node 
+	@param identifier identifier 
+	@param title Name given to the learning object. element occurs 0 or 1 time within the <general> element.
+	@param catalogentry This data element defines an entry within a catalog.  element occurs 0 or more times.
+	@param language The primary human language or languages used within this learning object to communicate to the intended user.element occurs 0 or more times 
+	@param description  A textual description of the content of this learning object.element occurs 0 or more times 
+	@param keyword A collection of keywords or phrases describing this learning object. element occurs 0 or more times 
+	@param coverage The span or extent of such things as time, culture, geography or region that applies to this learning object.element occurs 0 or more times 
+	@param structure Underlying organizational structure element occur 0 or 1 time  
+	@param aggregationlevel  The functional granularity. element occurs 0 or 1 time
+
+ 	@author Ernie Ghiglione (ErnieG@mm.st).
+    } {
+
+
+	set general [lors::imsmd::xml::newElement -owner $owner -name general]
+
+	# identifier
+
+	if {![empty_string_p $identifier]} {
+
+	    set identifier_node [lors::imsmd::xml::newElementText \
+				     -owner $owner \
+				     -name indentifier \
+				     -text $identifier]
+
+	    $general appendChild $identifier_node
+	}
+
+
+	# title
+
+	if {![empty_string_p $title]} {
+
+	    set title_node [lors::imsmd::xml::newElement -owner $owner -name title]
+	    
+	    foreach {y z} $title {
+		set langstring_node [lors::imsmd::create::newLangString \
+					 -owner $owner \
+					 -lang $y \
+					 -string $z \
+					]
+		
+		
+		$title_node appendChild $langstring_node
+
+	    }
+
+
+	    $general appendChild $title_node
+	}
+	
+	# description
+	if {![empty_string_p $description]} {
+
+	    set description_node [lors::imsmd::xml::newElement -owner $owner -name description]
+	    
+	    foreach {y z} $description {
+		set langstring_node [lors::imsmd::create::newLangString \
+					 -owner $owner \
+					 -lang $y \
+					 -string $z \
+					]
+		
+		
+		$description_node appendChild $langstring_node
+
+	    }
+
+
+	    $general appendChild $description_node
+	}
+
+
+	return $general
+
+    }
+
+
+}
+

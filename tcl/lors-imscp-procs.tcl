@@ -38,6 +38,9 @@ ad_proc -public lors::imscp::getItems {
     @author Ernie Ghiglione (ErnieG@mm.st)
 
 } {
+    # set utf-8 system encoding
+    encoding system utf-8
+
     set items ""
     set itemx [$tree child all item]
 
@@ -125,6 +128,25 @@ ad_proc -public lors::imscp::getItems {
                 set cc [concat $cc "{}"]
             }
 
+	    ## .LRN extensions
+	    # I have added an extensions to IMS items as an attribute
+	    # so we can define permission on different ims_items. The
+	    # attribute is dotLRN:permission. 
+	    # if it doesn't exists it keeps default
+	    # permissions. Otherwise it takes the permission as sets
+	    # it accordingly 
+
+            # dotLRN:permission
+            set dotlrn_permission [lors::imsmd::getAtt $itemx dotLRN:permission]
+
+	    ns_log Notice "lorsm ims_item dotLRN:permission $dotlrn_permission"
+
+            if {![empty_string_p $dotlrn_permission]} {
+                set cc [concat $cc "$dotlrn_permission"]
+            } else {
+                set cc [concat $cc "{}"]
+            }
+
             set itemxx [$itemx child all item]
             if { ![empty_string_p $itemxx] } {
                 incr parent
@@ -168,6 +190,7 @@ ad_proc -public lors::imscp::manifest_add {
     {-folder_id ""}
     {-fs_package_id ""}
     {-package_id ""}
+    {-community_id ""}
     {-user_id ""}
     {-creation_ip ""}
 
@@ -183,11 +206,16 @@ ad_proc -public lors::imscp::manifest_add {
     @option parent_man_id parent manifest id (for manifest with submanifests).
     @option isscorm wheather the manifest is SCORM compliant
     @option folder_id the CR folder ID we created to put the manifest on.
-    @option package_id Package id.
+    @option fs_package_id file-storage package id.
+    @option package_id package_id for the instance of LORSm
+    @option community_id Community ID
     @option user_id user that adds the category. [ad_conn user_id] used by default.
     @option creation_ip ip-address of the user that adds the category. [ad_conn peeraddr] used by default.
     @author Ernie Ghiglione (ErnieG@mm.st)
 } {
+    # set utf-8 system encoding
+    encoding system utf-8
+
    if {[empty_string_p $user_id]} {
         set user_id [ad_conn user_id]
     }
@@ -203,6 +231,8 @@ ad_proc -public lors::imscp::manifest_add {
     if {[empty_string_p $isscorm]} {
         set isscorm 0
     }
+
+    set class_key [dotlrn_community::get_community_type_from_community_id $community_id]
 
     db_transaction {
         set manifest_id [db_exec_plsql new_manifest {
@@ -220,7 +250,9 @@ ad_proc -public lors::imscp::manifest_add {
                                     current_timestamp,
                                     :user_id,
                                     :creation_ip,
-                                    :package_id
+                                    :package_id,
+                                    :community_id,
+                                    :class_key
                                     );
 
         }
@@ -275,6 +307,9 @@ ad_proc -public lors::imscp::organization_add {
     @option creation_ip ip-address of the user that adds the category. [ad_conn peeraddr] used by default.
     @author Ernie Ghiglione (ErnieG@mm.st)
 } {
+    # set utf-8 system encoding
+    encoding system utf-8
+
    if {[empty_string_p $user_id]} {
         set user_id [ad_conn user_id]
     }
@@ -345,6 +380,7 @@ ad_proc -public lors::imscp::item_add {
     {-timelimitaction ""}
     {-datafromlms ""}
     {-masteryscore ""}
+    {-dotlrn_permission ""}
     {-package_id ""}
     {-user_id ""}
     {-creation_ip ""}
@@ -368,11 +404,15 @@ ad_proc -public lors::imscp::item_add {
     @option timelimitaction items time limit action (SCORM extension).
     @option datafromlms items data from LMS (SCORM extension).
     @option masteryscore items mastery score (SCORM extension).
+    @option dotlrn_permission dotlrn extension to incoporate permissions.
     @option package_id Package id.
     @option user_id user that adds the category. [ad_conn user_id] used by default.
     @option creation_ip ip-address of the user that adds the category. [ad_conn peeraddr] used by default.
     @author Ernie Ghiglione (ErnieG@mm.st)
 } {
+    # set utf-8 system encoding
+    encoding system utf-8
+
    if {[empty_string_p $user_id]} {
         set user_id [ad_conn user_id]
     }
@@ -421,6 +461,44 @@ ad_proc -public lors::imscp::item_add {
                         ]
 
     }
+
+    if {![empty_string_p $dotlrn_permission]} {
+	
+	permission::toggle_inherit -object_id $item_id
+
+
+	set community_id [dotlrn_community::get_community_id]
+
+	# Set read permissions for community/class dotlrn_admin_rel
+
+	set party_id_admin [db_string party_id {select segment_id from rel_segments \
+						     where group_id = :community_id \
+						     and rel_type = 'dotlrn_admin_rel'}]
+
+	permission::grant -party_id $party_id_admin -object_id $item_id -privilege read
+	
+
+	# Set read permissions for *all* other professors  within .LRN
+	# (so they can see the content)
+
+        set party_id_professor [db_string party_id {select segment_id from rel_segments \
+                                                     where rel_type = 'dotlrn_professor_profile_rel'}]
+
+	permission::grant -party_id $party_id_professor -object_id $item_id -privilege read
+
+	# Set read permissions for *all* other admins within .LRN
+	# (so they can see the content)
+
+        set party_id_admins [db_string party_id {select segment_id from rel_segments \
+                                                     where rel_type = 'dotlrn_admin_profile_rel'}]
+
+	permission::grant -party_id $party_id_admins -object_id $item_id -privilege read
+
+	ns_log Notice "ims_item_id ($item_id)  read permissions granted for community admins"
+
+
+    }
+
     return $item_id
 }
 
@@ -460,6 +538,9 @@ ad_proc -public lors::imscp::addItems {
     @author Ernie Ghiglione (ErnieG@mm.st)
 
 } {
+    # set utf-8 system encoding
+    encoding system utf-8
+
     set retlist ""
 
     foreach item $itemlist {
@@ -478,6 +559,7 @@ ad_proc -public lors::imscp::addItems {
         set p_timelimitaction [lindex $item 9]
         set p_datafromlms [lindex $item 10]
         set p_masteryscore [lindex $item 11]
+	set p_dotlrn_permission [lindex $item 12]
 
         if {$p_hasmetadata != 0} {
             set md_node $p_hasmetadata
@@ -497,7 +579,8 @@ ad_proc -public lors::imscp::addItems {
                          -maxtimeallowed $p_maxtimeallowed \
                          -timelimitaction $p_timelimitaction \
                          -datafromlms $p_datafromlms \
-                         -masteryscore $p_masteryscore]
+                         -masteryscore $p_masteryscore \
+			 -dotlrn_permission $p_dotlrn_permission]
 
         if {$p_hasmetadata == 1} {
             set aa [lors::imsmd::addMetadata \
@@ -508,8 +591,8 @@ ad_proc -public lors::imscp::addItems {
 
         lappend retlist [list $item_id $p_identifierref]
 
-        if { [llength $item] > 12} {
-            set subitem [lors::imscp::addItems -org_id $p_org_id [lindex $item 12] $item_id $tmp_dir]
+        if { [llength $item] > 13} {
+            set subitem [lors::imscp::addItems -org_id $p_org_id [lindex $item 13] $item_id $tmp_dir]
             set retlist [concat $retlist $subitem]
         }
     }
@@ -544,6 +627,9 @@ ad_proc -public lors::imscp::resource_add {
     @option creation_ip ip-address of the user that adds the category. [ad_conn peeraddr] used by default.
     @author Ernie Ghiglione (ErnieG@mm.st)
 } {
+    # set utf-8 system encoding
+    encoding system utf-8
+
    if {[empty_string_p $user_id]} {
         set user_id [ad_conn user_id]
     }
@@ -684,17 +770,29 @@ ad_proc -public lors::imscp::file_add {
    if {[empty_string_p $hasmetadata]} {
         set hasmetadata 0
     }
-    db_transaction {
-        set file [db_exec_plsql file_add {
-            select  ims_file__new (
+
+    # At times, and for some strange reason, Blackboard and Reload
+    # incorrectly add repeted <files> under resources. So we need to
+    # catch that before we try to insert them again under the same
+    # resource
+
+    set file_exists [db_0or1row file_ex "select file_id from ims_cp_files where file_id = :file_id and res_id = :res_id"]
+
+    ns_log Notice "Fernando $file_exists"
+
+    if {$file_exists == 0} {
+	db_transaction {
+	    set file [db_exec_plsql file_add {
+            	select  ims_file__new (
                                          :file_id,
                                          :res_id,
                                          :pathtofile,
                                          :filename,
                                          :hasmetadata
                                          );
-        }
-                       ]
+	    }
+		     ]
+	}
     }
     return $file_id
 }
