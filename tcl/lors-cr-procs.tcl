@@ -104,7 +104,7 @@ ad_proc -public lors::cr::add_folder {
             }]
 	
     } on_error {
-        ad_return_error "Error inserting folder" "The error was: $errmsg"
+        ad_return_error "[_ lors.lt_Error_inserting_folde]" "[_ lors.The_error_was_errmsg]"
         ad_script_abort
     }
     return $folder_id

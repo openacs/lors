@@ -809,7 +809,7 @@ ad_proc -public lors::imscp::open {} {
     Installing IMS/SCORM Service Contracts
 
 } {
-    return "this thing is open now"
+    return " [_ lors.lt_this_thing_is_open_no]"
 
 }
 
@@ -887,7 +887,7 @@ ad_proc -public lors::imscp::expand_file {
 	}
 	default {
 	    set errp 1
-	    set errMsg "dont know how to extract $upload_file"
+	    set errMsg " [_ lors.lt_dont_know_how_to_extr] $upload_file"
 	}
     }
     

@@ -1796,7 +1796,7 @@ namespace eval lors::imsmd {
 		    }
 		}
 	    } on_error {
-		ad_return_error "Transaction Error in LOM" "The error was: $errmsg"
+		ad_return_error "[_ lors.lt_Transaction_Error_in_]" "[_ lors._The] $errmsg"
 	    }
  
     }
@@ -1841,7 +1841,7 @@ namespace eval lors::imsmd {
 
 	    }
         }  on_error {
-	    ad_return_error "Transaction Error while Adding Metadata" "The error was: $errmsg"
+	    ad_return_error "[_ lors.lt_Transaction_Error_whi]" "[_ lors.The_error_was] $errmsg"
 	}
         return 1
     }
@@ -1880,7 +1880,7 @@ namespace eval lors::imsmd {
                 (:p_ims_md_id, :p_schema, :p_schemaversion)
             }
 	} on_error {
-	    ad_return_error "Transaction Error in MD schema shemaversion " "The error was: $errmsg"
+	    ad_return_error "[_ lors.lt_Transaction_Error_in__1] " " [_ lors._The] $errmsg"
 	}
     }
 
@@ -1903,7 +1903,7 @@ namespace eval lors::imsmd {
 		    delete from ims_md where ims_md_id = :p_ims_md_id
 		}
 	    } on_error {
-		ad_return_error "Transaction deleting MD record" "The error was: $errmsg"
+		ad_return_error "[_ lors.lt_Transaction_deleting_]" "[_ lors.The_error_was] $errmsg"
 	    }
 	} 
 
