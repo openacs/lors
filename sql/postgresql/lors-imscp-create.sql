@@ -122,7 +122,7 @@ create table ims_cp_manifests (
     folder_id       integer,
     fs_package_id   integer,
     isshared	    boolean default 'f' not null,
-    presentation_id integer
+    presentation_id integer  
 );
 
 comment on table ims_cp_manifests is '
