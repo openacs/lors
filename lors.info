@@ -7,7 +7,7 @@
     <initial-install-p>f</initial-install-p>
     <singleton-p>t</singleton-p>
 
-    <version name="0.5d" url="http://openacs.org/repository/download/apm/LORS-05d.apm">
+    <version name="0.6d" url="http://openacs.org/repository/download/apm/LORS-05d.apm">
         <owner url="mailto:ernieg@mm.st">Ernie Ghiglione</owner>
         <summary>IMS Content Packaging and Medata Services. 
 Implementation of IMS CP and MD for .LRN </summary>
