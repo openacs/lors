@@ -1,0 +1,60 @@
+Change log
+
+06-April-2004
+* Change the item, organization and manifest functions to properly use tree_sortkey (using proper context_id as parent_ids). 
+
+07-April-2004
+* Added a link to the items on course-structure, so one can access directly the resource. 
+
+  - Better integration with file_storage,
+
+* Fixed the manifest_title to get rid of path-like / so it can confuse the index.vhu
+* Changed the config.tcl file to:
+
+  ns_section ns/server/${server}/module/nssock
+  ns_param   timeout            240     ;# increase the timeout to 4 minutes instead
+  ns_param   maxinput           5000000 ;# increase the size of the upload files
+
+* If not title is provided in the <item> we add a new one: "[No Title]" ;-) 
+
+09-April-2004
+
+* Added delivery module on /package/lorsm/www/delivery
+
+10-April-2004
+
+* course-add-3.tcl added double support for found_file variable. If more than one file_id is coming back, we check against the actual file directory we added the file from. 
+* .LRNized it!! ;-)
+
+11-April-2004
+
+* Resources aren't children of item_ids. They are children of the organizations. [I'm not so sure if this is a 100% correct, but it is better than it was before.
+* Added index to lors_imscp_create.sql (following DonB advice).
+* Multiplicity of resources per item. We created a new table ims_cp_items_to_resources. Each resource can have one to many items.
+* Added index on ims_cp_resources (identifier). I'm not terribly convinced about this. Need to continue exploring this option.
+
+12-April-2004
+
+* Nuked the lors::imscp::findfile function. Changed it instead for lors::findmanifest, as there's no point of searching for manifest files that aren't in the root directory
+* Fixed the multiple organizations issues and relations to resources
+* Resources now are manifest's children (insted of organization's)
+* Tested all IMS packages and they worked like a charm ;-) Except submanifests and empty organization packages.
+* Added some bits of documentation to lors-imscp-proc.tcl & lors-imsmd-proc.tcl
+
+
+
+Remaining fixes:
+
+Urgent:
+
+[FIXED!] * multiplicity of resources per item (that is critical) [11-April-2004]
+[FIXED!] * Resources shouldn't necesarily be linked to organizations as they should be to manifests. They are a subchild of man_id, not org_id! We should be able to add resources without having to have organizations. [12-April-2004]
+
+
+Important
+
+* tree_sortkey for submanifests (and even maybe files)
+* multiple courses in .LRN portlet
+
+Wish list:
+* metadata upload LOM XML files for each resource (manifest, file, resource, etc)
