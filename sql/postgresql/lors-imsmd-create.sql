@@ -444,8 +444,8 @@ create sequence ims_md_metadata_scheme_seq start 1;
 
 create table ims_md_metadata_scheme (
     ims_md_md_sch_id    integer
-			contraint ims_md_md_sch_id_pk
-			primary_key,
+			constraint ims_md_md_sch_id_pk
+			primary key,
     ims_md_id           integer
                         constraint ims_md_ms_ims_md_id_fk
                         references ims_md(ims_md_id)
