@@ -16,8 +16,10 @@ Implementation of IMS CP and MD for .LRN </summary>
         <license>GPL</license>
         <license_url>http://www.gnu.org/copyleft/gpl.html</license_url>
         <maturity>1</maturity>
+
         <provides url="lors" version="0.5d"/>
         <requires url="file-storage" version="5.1.0d"/>
+        <requires url="dotlrn" version="2.1.0b1"/>
 
         <callbacks>
         </callbacks>
