@@ -88,6 +88,21 @@ drop function inline_0 ();
 -----
 --   Create tables
 ----
+-- Presentations
+create table lors_available_presentation_formats (
+	presentation_name 	varchar(100),
+	folder_name		varchar(100),
+	presentation_id		integer
+);
+
+insert into lors_available_presentation_formats values ('Classic style','delivery_clasico',1);
+insert into lors_available_presentation_formats values ('E-LANE style','delivery',2);
+
+comment on table lors_available_presentation_formats is '
+This table stores the available presentation formats for the courses. Its contains the pretty name
+for the format, an id, and the folder in packages/lorsm/www/ where the presentation is stored
+by now, just two presentations, which we store on creation';
+
 -- Manifests
 create table ims_cp_manifests (
     man_id          integer
@@ -106,7 +121,8 @@ create table ims_cp_manifests (
     isscorm         boolean,
     folder_id       integer,
     fs_package_id   integer,
-    isshared	    boolean default 'f' not null
+    isshared	    boolean default 'f' not null,
+    presentation_id integer
 );
 
 comment on table ims_cp_manifests is '
