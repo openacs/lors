@@ -242,7 +242,7 @@ ad_proc -public lors::imscp::bb6::get_coursetoc {
 ad_proc -public lors::imscp::bb6::get_bb_doc {
     -file:required
 } {
-    Gets content from Blackboard's resource/x-bb-documen elements
+    Gets content from Blackboard's resource/x-bb-document elements
 
     @option file filename
     @author Ernie Ghiglione (ErnieG@mm.st)
@@ -287,10 +287,21 @@ ad_proc -public lors::imscp::bb6::get_bb_doc {
 	set file_list [list]
 	lappend file_list {file_id} [lors::imsmd::getAtt $file id]
 	lappend file_list {NAME} [lors::imsmd::getElement [$file getElementsByTagName NAME]]
+	lappend file_list {FILEACTION} [lors::imsmd::getAtt [$file getElementsByTagName FILEACTION] value]
 	lappend file_list {LINKNAME} [lors::imsmd::getAtt [$file getElementsByTagName LINKNAME] value]
 	lappend file_list {SIZE} [lors::imsmd::getAtt [$file getElementsByTagName SIZE] value]
 	lappend file_list {CREATED} [lors::imsmd::getAtt [$file getElementsByTagName CREATED] value]
 	lappend file_list {UPDATED} [lors::imsmd::getAtt [$file getElementsByTagName UPDATED] value]
+
+	foreach registryentry [[$file getElementsByTagName REGISTRY] childNodes] {
+
+	    if {[$registryentry getAttribute key] == "entry_point"} {
+
+		lappend file_list {REGISTRY_ENTRY_POINT} [lors::imsmd::getAtt $registryentry value]
+
+	    }
+
+	}
 
 	lappend files $file_list
 
@@ -410,6 +421,128 @@ ad_proc -public lors::imscp::bb6::get_announcement {
 
 }
 
+ad_proc -public lors::imscp::bb6::has_packages {
+    -resource_files:required
+} {
+    Checks whether this resource has a file in the form of a package.
+    Returns 1 if that's the case. 0 otherwise.
+
+    @param resource_files the resource we need to check
+    @author Ernie Ghgilione (ErnieG@mm.st)
+} {
+
+    if {[lsearch -exact [lindex $resource_files 0] PACKAGE] == -1} {
+	return 0
+    } else {
+	return 1
+    }
+
+
+}
+
+ad_proc -private lors::imscp::bb6::process_package {
+    -tmp_dir:required
+    -zipfile:required
+    -res_identifier:required
+    -resource:required
+    -entry_point:required
+} {
+    Process the BB Packages: makes it IMS CP 
+    compliant (rather than BB's weird interpretation
+    of IMS CP).
+
+    @param tmp_dir the temp dir
+    @param zipfile package zipped file name
+    @param res_identifier Identifier for the resource
+    @param resource the actual resource we are fixing
+    @param entry_point the actual file within the package to link to
+    @author Ernie Ghgilione (ErnieG@mm.st)
+} {
+
+    # If it has a
+    # "Package" then
+    # we have to unzip the ziped file
+    # (contained in the
+    # file name), then collect all the
+    # unzipped file and
+    # add them as files in the resource.
+    
+    # additionally, we need to change the
+    # resource to
+    # point out to the entry_point on the
+    # package.
+
+    set path "$tmp_dir/$res_identifier"
+    
+    ns_log Notice "WE GOTTA PACKAGE PATH: $path FILE: $zipfile"
+    
+    ##
+    ## Unzip file and add those to the
+    # resource and point the href to
+    # the entry_point
+    ##
+    
+    # Now we unzip the package file
+    # into the exact directory where
+    # the resource
+    
+    set errp [catch { exec unzip -jd $path $path/$zipfile } errmsg]
+    
+    # catch any errors
+    if {$errp} {
+	ns_log Notice "lors::imscp::bb6::extract_html doc_bb: package zip error ($errmsg)"
+	return -code error "lors::imscp::bb6::extract_html doc_bb: package zip error ($errmsg)"
+    }
+    
+    # Now we delete the zip file as we
+    # don't need it any more
+    
+    file delete -force $path/$zipfile
+    
+    # Also we remove the actual file
+    # children for the resource as
+    # they exist in the BB XMl file as
+    # we are going to replace them now
+    
+    $resource removeChild [$resource firstChild]
+    
+    # now we get all the files in the
+    # directory. 
+    
+    set all_packaged_files [lors::imscp::dir_walk $path]
+    
+    foreach filex $all_packaged_files {
+	# we add the files to the
+	# resource
+	
+	# create the file XML node
+	set file_doc [dom createDocument file]
+	set file_nodex [$file_doc documentElement]
+	
+	# we get rid of the /tmp/xyz
+	# part of the path and only
+	# put the relative href
+	
+	regsub $tmp_dir $filex {} filex
+	
+	# set the href to the file node
+	$file_nodex setAttribute href $filex
+	
+	# append the file node as child
+	# for the resource
+	
+	$resource appendChild $file_nodex
+	
+    }
+    
+    # now let's reference the resource
+    # to point to the BB entry_point
+    
+    $resource setAttribute href "/$res_identifier/$entry_point"
+
+}
+
+
 
 ad_proc -public lors::imscp::bb6::get_forum {
     -file:required
@@ -468,6 +601,8 @@ ad_proc -public lors::imscp::bb6::create_MD {
     set doc [dom parse [read [open $tmp_dir/$file]]]
     # gets the manifest tree
     set manifest [$doc documentElement]
+    # we add the xml namespace for dotLRN
+    $manifest setAttributeNS  {} xmlns:dotLRN http://dotlrn.org/content-packaging
 
     # Check if it has a metadata node for the manifest
     # If it doesn't let's create one with the description we get from
@@ -624,7 +759,7 @@ ad_proc -public lors::imscp::bb6::clean_items {
     
     }
 
-    ns_log Notice "HERE IS THE LIST OF ITEMS: ([llength $items_list]) $items_list \nResource list ([llength $resources_list]) $resources_list"
+#    ns_log Notice "HERE IS THE LIST OF ITEMS: ([llength $items_list]) $items_list \nResource list ([llength $resources_list]) $resources_list"
     
     ns_log Notice "\n\n"
 
@@ -660,7 +795,7 @@ ad_proc -public lors::imscp::bb6::clean_items {
 
 		"course/x-bb-coursetoc" {
 
-		    ns_log Notice "\Coursetoc Type LOPEZ\n" 
+		    ns_log Notice "\Coursetoc Type \n" 
 		    ns_log Notice "\tAdding attribute to [lindex $item 2] \n" 
 		    if {![empty_string_p [[lindex $item 2] child all item]]} {
 			[lindex $item 2] setAttributeNS dotLRN dotLRN:permission admin
@@ -753,6 +888,11 @@ ad_proc -public lors::imscp::bb6::extract_html {
     Cleans ups a lot of unused application data and resources. 
     (this should be customizable in a different functions)
 
+    Now it also handles BB packages (a weird way of zipping files)
+    that suppose to be declared in the imsmanifest, but of course
+    they are not. Thanks Blackboard for making interoperability
+    possible (NOT!)
+
     @param tmp_dir temporary directory where the imsmanifest.xml is located. 
     @option file filename
     @author Ernie Ghiglione (ErnieG@mm.st)
@@ -823,7 +963,6 @@ ad_proc -public lors::imscp::bb6::extract_html {
 		$resource setAttribute type webcontent
 
 	    }
-
 	    "resource/x-bb-document" {
 
 		set file [lors::imsmd::getAtt $resource bb:file]
@@ -865,12 +1004,11 @@ ad_proc -public lors::imscp::bb6::extract_html {
 		} else {
 		    # if it ain't a folder
 
-
 		    # check if the content of TEXT tag is HTML or not 
 		    # If it is, then we need to assume that TEXT has
 		    # embedded HTML code that references to the files
 		    # under the FILES tag (this could be a bit tricky, but
-		    # there's not much we can do for now
+		    # there's not much we can do for now)
 
 		    ns_log Notice  "\nlist of files: [lindex $resourcext(FILES) 0]\n"
 		    
@@ -895,57 +1033,126 @@ ad_proc -public lors::imscp::bb6::extract_html {
 
 			    set counter 0
 			    set files_lister ""
+			    set has_packages [lors::imscp::bb6::has_packages -resource_files $resourcext(FILES)]
 
 			    foreach file $resourcext(FILES) {
 				ns_log Notice  "\n\t We gotta file: $file\n "
-				
-				if {[regexp [lindex $file 3] $content]} {
-				    ns_log Notice  "\t [lindex $file 5]: [lindex $file 3] is referenced\n"
+
+				# We need to find out whether this
+				# file is a package or just a file to
+				# be added to the end of the HTML
+				# TODO
+
+				# Here's where we handle BB packages. BB packages
+				# are a painful thing that BB engineers use to
+				# complicate the life of other people
+				# -like me- to get access to their
+				# files
+
+				# A BB package is a zip file that
+				# contains a bunch of other file
+				# within it. There's really *no*
+				# reason for the BB people to package
+				# them, but I guess it's just to make
+				# it more difficult for to inter
+				# exchange content with other systems.
+
+				# Does it have a package?
+
+				if {$has_packages != 0}  {
+
+				    lors::imscp::bb6::process_package -tmp_dir $tmp_dir \
+					-zipfile [lindex $file 3] \
+					-res_identifier $res_identifier \
+					-resource $resource \
+					-entry_point [lindex $file 15]
+
 				} else {
-				    if {$counter == 0} {
+				    
+				    # if this is not a package, then
+				    # it checks whether the files are
+				    # referenced in the content and
+				    # otherwise it adds them
+
+				    if {[regexp [lindex $file 3] $content]} {
+					ns_log Notice  "\t [lindex $file 7]: [lindex $file 3] is referenced\n"
+				    } else {
+					if {$counter == 0} {
 					
-					append files_lister "<p>Files: <ul>\n"
+					    append files_lister "<p>Files: <ul>\n"
+					}
+					append files_lister "\t<li><a href=\"[lindex $file 3]\">[lindex $file 7]</a></li>\n"
+					incr counter
+					ns_log Notice  "\t [lindex $file 7]: [lindex $file 3] ISN'T referenced\n"
 				    }
-				    append files_lister "\t<li><a href=\"[lindex $file 3]\">[lindex $file 5]</a></li>\n"
-				    incr counter
-				    ns_log Notice  "\t [lindex $file 5]: [lindex $file 3] ISN'T referenced\n"
+				}
+				
+				#end of resources file loop
+			    }
+
+			    # if has_packages != 0 then there was at
+			    # least one file was declared as a package
+			    # Therefore we ignore $content 
+			    # This is an assumption as I haven't seen
+			    # files AND packages within the same resource.
+
+			    if {$has_packages == 0} {
+				if {$counter > 0} {
+				    append files_lister "</ul>\n</body>\n"
+				    regsub -nocase "</body>" $content $files_lister content
 				}
 
+				set res_href [lors::imscp::bb6::txt_to_html -txt $content -filename $tmp_dir/$folder/$filename]
+
+				regsub $tmp_dir $res_href {} res_href
+				ns_log Notice  " \n   And we set up the attribute to: href $res_href\n"
+
+				$resource setAttribute href $res_href
 			    }
-
-			    if {$counter > 0} {
-				append files_lister "</ul>\n</body>\n"
-				regsub -nocase "</body>" $content $files_lister content
-			    }
-
-
-			    set res_href [lors::imscp::bb6::txt_to_html -txt $content -filename $tmp_dir/$folder/$filename]
-
-			    regsub $tmp_dir $res_href {} res_href
-			    ns_log Notice  " \n   And we set up the attribute to: href $res_href\n"
-
-			    $resource setAttribute href $res_href
-
-			} 
+			}
 
 		    } else {
 
 
 			if {![empty_string_p [lindex $resourcext(FILES) 0]]} {
+
 			    array set file_href [lindex $resourcext(FILES) 0]
-			    ns_log Notice  "\n    the HREF for this file should be /$res_identifier/$file_href(NAME)\n"
+
+			    if {$file_href(FILEACTION) == "PACKAGE"} {
+				lors::imscp::bb6::process_package -tmp_dir $tmp_dir \
+				    -zipfile $file_href(NAME) \
+				    -res_identifier $res_identifier \
+				    -resource $resource \
+				    -entry_point $file_href(REGISTRY_ENTRY_POINT)
+			    } else {
 			    
-			    set res_href "/$res_identifier/$file_href(NAME)"
-
-			    $resource setAttribute href $res_href
-
+				ns_log Notice  "\n    the HREF for this file should be /$res_identifier/$file_href(NAME)\n"
+			    
+				set res_href "/$res_identifier/$file_href(NAME)"
+				
+				$resource setAttribute href $res_href
+			    }
 
 			} else {
 			    set folder [lors::imsmd::getAtt $resource identifier]
 
 			    set filename $resourcext(id).html
 
-			    set res_href [lors::imscp::bb6::txt_to_html -txt [lindex $resourcext(TEXT) 0] -filename $tmp_dir/$folder/$filename]
+			    # in the case this is type "S" and also
+			    # the resource CONTENTHANDLER =
+			    # resource/x-bb-externallink and
+			    # RENDERTYPE = URL, then we add this link
+			    # to the TEXT (if any) as part of the
+			    # content
+
+			    set partial_content [lindex $resourcext(TEXT) 0]
+
+			    if {$resourcext(CONTENTHANDLER) == "resource/x-bb-externallink" && $resourcext(RENDERTYPE) == "URL"} {
+				append partial_content "\n<p>\n\t<a href=\"$resourcext(URL)\" target=\"_new\">$resourcext(TITLE)</a>\n</p>"
+			    }
+
+			    set res_href [lors::imscp::bb6::txt_to_html -txt $partial_content \
+					      -filename $tmp_dir/$folder/$filename]
 
 			    regsub $tmp_dir $res_href {} res_href
 			    ns_log Notice  " \n   And we set up the attribute to: href $res_href\n"
@@ -1005,6 +1212,20 @@ ad_proc -public lors::imscp::bb6::extract_html {
 	    "course/x-bb-courseappsetting" {
 
 		ns_log Notice  "\n--resource courseappsetting:  [lors::imsmd::getAtt $resource bb:file]  deleted\n"
+		file delete $tmp_dir/[lors::imsmd::getAtt $resource bb:file]
+		$resource delete
+
+	    }
+	    "course/x-bb-coursesetting" {
+
+		ns_log Notice  "\n--resource coursesetting:  [lors::imsmd::getAtt $resource bb:file]  deleted\n"
+		file delete $tmp_dir/[lors::imsmd::getAtt $resource bb:file]
+		$resource delete
+
+	    }
+	    "resource/x-bb-conference" {
+
+		ns_log Notice  "\n--resource conference:  [lors::imsmd::getAtt $resource bb:file]  deleted\n"
 		file delete $tmp_dir/[lors::imsmd::getAtt $resource bb:file]
 		$resource delete
 

@@ -778,7 +778,6 @@ ad_proc -public lors::imscp::file_add {
 
     set file_exists [db_0or1row file_ex "select file_id from ims_cp_files where file_id = :file_id and res_id = :res_id"]
 
-    ns_log Notice "Fernando $file_exists"
 
     if {$file_exists == 0} {
 	db_transaction {
@@ -866,6 +865,25 @@ ad_proc -public lors::imscp::expand_file {
 	}
 	zip {
 	    set errp [ catch { exec unzip -d $tmp_dir $tmpfile } errMsg]
+
+	    ## According to man unzip:
+	    # unzip exit status:
+	    #
+	    # 0      normal; no errors or warnings
+	    # detected.
+
+	    # 1 one or more warning errors were encountered, but process-
+	    #   ing  completed  successfully  anyway.  This includes zip-
+	    #   files where one or more files was skipped due  to  unsup-
+	    #   ported  compression  method or encryption with an unknown
+	    #   password.
+
+	    # Therefor it if it is 1, then it concluded successfully
+	    # but with warnings, so we switch it back to 0
+
+	    if {$errp == 1} {
+		set errp 0
+	    }
 	}
 	default {
 	    set errp 1

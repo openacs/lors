@@ -439,14 +439,18 @@ Domain: vCard <http://www.imc.org/pdi/>
 String (1000 char)
 ';
 
+--create sequence for ims_md_metadata_scheme table
+create sequence ims_md_metadata_scheme_seq start 1;
+
 create table ims_md_metadata_scheme (
-    ims_md_id       integer
-                    constraint ims_md_ms_ims_md_id_fk
-                    references ims_md(ims_md_id)
-                    on delete cascade,
-    scheme          varchar(30),
-                    constraint ims_md_md_sc_pk
-                    primary key (ims_md_id, scheme)
+    ims_md_md_sch_id    integer
+			contraint ims_md_md_sch_id_pk
+			primary_key,
+    ims_md_id           integer
+                        constraint ims_md_ms_ims_md_id_fk
+                        references ims_md(ims_md_id)
+                        on delete cascade,
+    scheme              varchar(30)
 );
 
 comment on table ims_md_metadata_scheme is '

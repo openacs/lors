@@ -23,8 +23,6 @@ ad_library {
 #
 
 namespace eval lors::imsmd {
-    # set utf-8 system encoding
-    encoding system utf-8
 
     ad_proc -public getAtt {doc attr_name} {
         getAtt Gets attributes for an specific element
@@ -33,7 +31,6 @@ namespace eval lors::imsmd {
         @param attr_name Attribute we want to fetch
 
     } {
-
         if {[$doc hasAttribute $attr_name] == 1} {
             $doc getAttribute $attr_name
         } else {
@@ -1399,12 +1396,13 @@ namespace eval lors::imsmd {
 
 		# Adds Metadata Schemes
 		foreach metadatascheme $metadataschemes {
+		    set p_ims_md_md_sch_id [db_nextval ims_md_metadata_scheme_seq]
 		    set p_scheme $metadatascheme
 		    
 		    db_dml add_new_metadata_metadatascheme {
-			insert into ims_md_metadata_scheme (ims_md_id, scheme)
+			insert into ims_md_metadata_scheme (ims_md_md_sch_id, ims_md_id, scheme)
 			values
-			(:p_ims_md_id, :p_scheme)
+			(:p_ims_md_md_sch_id, :p_ims_md_id, :p_scheme)
 		    }
 		}
 
@@ -1908,6 +1906,22 @@ namespace eval lors::imsmd {
 		ad_return_error "Transaction deleting MD record" "The error was: $errmsg"
 	    }
 	} 
+
+    }
+
+    ad_proc -public mdExist {
+	{-ims_md_id:required}
+    } {
+	Checks whether the acs_object (ims_md_id) does exist.
+	Returns 1 if that's the case, 0 otherwise
+	
+	@param ims_md_id the acs object id 
+ 	@author Ernie Ghiglione (ErnieG@mm.st).
+    } {
+	set p_ims_md_id $ims_md_id
+
+	# if record exists... returns 1
+	return [db_0or1row check_md_record {select ims_md_id from ims_md where ims_md_id = :p_ims_md_id}]
 
     }
 
