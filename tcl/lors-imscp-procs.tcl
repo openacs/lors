@@ -193,6 +193,7 @@ ad_proc -public lors::imscp::manifest_add {
     {-community_id ""}
     {-user_id ""}
     {-creation_ip ""}
+	{-course_presentation_format "-1"}
 
 } {
     Inserts a new manifest according to the imsmanifest.xml file.
@@ -252,7 +253,8 @@ ad_proc -public lors::imscp::manifest_add {
                                     :creation_ip,
                                     :package_id,
                                     :community_id,
-                                    :class_key
+                                    :class_key,
+									:course_presentation_format
                                     );
 
         }

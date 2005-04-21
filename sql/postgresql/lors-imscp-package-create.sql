@@ -38,26 +38,28 @@ create or replace function ims_manifest__new (
     varchar,    -- creation_ip
     integer,    -- package_id
     integer,    -- community_id
-    varchar     -- class_key
+    varchar,     -- class_key
+	integer 	-- course_presentation_format
 )
 returns integer as '
 declare
-    p_man_id                alias for $1;
-    p_course_name           alias for $2;
-    p_identifier            alias for $3;
-    p_version               alias for $4;
-    p_orgs_default          alias for $5;
-    p_hasmetadata           alias for $6;
-    p_parent_man_id         alias for $7;
-    p_isscorm               alias for $8;
-    p_folder_id             alias for $9;
-    p_fs_package_id         alias for $10;
-    p_creation_date         alias for $11;
-    p_creation_user         alias for $12;
-    p_creation_ip           alias for $13;
-    p_package_id            alias for $14;
-    p_community_id          alias for $15;
-    p_class_key             alias for $16;
+    p_man_id                		alias for $1;
+    p_course_name           		alias for $2;
+    p_identifier            		alias for $3;
+    p_version               		alias for $4;
+    p_orgs_default          		alias for $5;
+    p_hasmetadata           		alias for $6;
+    p_parent_man_id         		alias for $7;
+    p_isscorm               		alias for $8;
+    p_folder_id             		alias for $9;
+    p_fs_package_id         		alias for $10;
+    p_creation_date         		alias for $11;
+    p_creation_user         		alias for $12;
+    p_creation_ip           		alias for $13;
+    p_package_id            		alias for $14;
+    p_community_id          		alias for $15;
+    p_class_key            	 		alias for $16;
+	p_course_presentation_format	alias for $17;
 
     v_man_id       integer;
 begin
@@ -72,9 +74,9 @@ begin
         );
 
         insert into ims_cp_manifests
-        (man_id, course_name, identifier, version, orgs_default, hasmetadata, parent_man_id, isscorm, folder_id, fs_package_id)
+        (man_id, course_name, identifier, version, orgs_default, hasmetadata, parent_man_id, isscorm, folder_id, fs_package_id, course_presentation_format)
         values
-        (v_man_id, p_course_name, p_identifier, p_version, p_orgs_default, p_hasmetadata, p_parent_man_id, p_isscorm, p_folder_id, p_fs_package_id);
+        (v_man_id, p_course_name, p_identifier, p_version, p_orgs_default, p_hasmetadata, p_parent_man_id, p_isscorm, p_folder_id, p_fs_package_id, p_course_presentation_format);
 
 	-- now we add it to the manifest_class relation table
 
