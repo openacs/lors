@@ -207,12 +207,8 @@ ad_proc -public lors::imscp::bb6::get_coursetoc {
     @option file filename
     @author Ernie Ghiglione (ErnieG@mm.st)
 } {
-    
-    # set utf-8 system encoding
-    encoding system utf-8
-
     # open xml file
-    set doc [dom parse [read [open $file]]]
+    set doc [dom parse [::tDOM::xmlReadFile $file]]
     # coursetoc
     set coursetoc [$doc documentElement]
 
@@ -247,12 +243,8 @@ ad_proc -public lors::imscp::bb6::get_bb_doc {
     @option file filename
     @author Ernie Ghiglione (ErnieG@mm.st)
 } {
-
-    # set utf-8 system encoding
-    encoding system utf-8
-
     # open xml file
-    set doc [dom parse [read [open $file]]]
+    set doc [dom parse [::tDOM::xmlReadFile $file]]
     # content
     set content [$doc documentElement]
 
@@ -328,10 +320,6 @@ ad_proc -public lors::imscp::bb6::txt_to_html {
     @option filename directory and filename where we are putting the file
     @author Ernie Ghiglione (ErnieG@mm.st)
 } {
-
-    # set utf-8 system encoding
-    encoding system utf-8
-
     # get directory info
     set dirname [file dirname $filename]
 
@@ -389,12 +377,8 @@ ad_proc -public lors::imscp::bb6::get_announcement {
     @option file filename
     @author Ernie Ghiglione (ErnieG@mm.st)
 } {
-
-    # set utf-8 system encoding
-    encoding system utf-8
-
     # open xml file
-    set doc [dom parse [read [open $file]]]
+    set doc [dom parse [::tDOM::xmlReadFile $file]]
     # content
     set announcement [$doc documentElement]
 
@@ -552,12 +536,8 @@ ad_proc -public lors::imscp::bb6::get_forum {
     @option file filename
     @author Ernie Ghiglione (ErnieG@mm.st)
 } {
-
-    # set utf-8 system encoding
-    encoding system utf-8
-
     # open xml file
-    set doc [dom parse [read [open $file]]]
+    set doc [dom parse [::tDOM::xmlReadFile $file]]
     # content
     set forum [$doc documentElement]
 
@@ -594,11 +574,8 @@ ad_proc -public lors::imscp::bb6::create_MD {
     @option file filename
     @author Ernie Ghiglione (ErnieG@mm.st)
 } {
-    # set utf-8 system encoding
-    encoding system utf-8
-
     # open manifest file with tDOM
-    set doc [dom parse [read [open $tmp_dir/$file]]]
+    set doc [dom parse [::tDOM::xmlReadFile $tmp_dir/$file]]
     # gets the manifest tree
     set manifest [$doc documentElement]
     # we add the xml namespace for dotLRN
@@ -613,7 +590,7 @@ ad_proc -public lors::imscp::bb6::create_MD {
     if {[empty_string_p $metadata]} {
 	
 	set filex res00001.dat
-	set docx [dom parse [read [open $tmp_dir/$filex]]]
+	set docx [dom parse [::tDOM::xmlReadFile $tmp_dir/$filex]]
 	# gets BB's course info
 	set course [$docx documentElement]
 	
@@ -669,18 +646,8 @@ ad_proc -public lors::imscp::bb6::clean_items {
     @option file filename
     @author Ernie Ghiglione (ErnieG@mm.st)
 } {
-
-    # set utf-8 system encoding
-    encoding system utf-8
-
-    # search for manifest file
-    set file $file
-
-    # set utf-8 system encoding
-    encoding system utf-8
-
     # open xml file
-    set doc [dom parse [read [open $tmp_dir/$file]]]
+    set doc [dom parse [::tDOM::xmlReadFile $tmp_dir/$file]]
 
     # gets the manifest tree
     set manifest [$doc documentElement]
@@ -898,12 +865,9 @@ ad_proc -public lors::imscp::bb6::extract_html {
     @author Ernie Ghiglione (ErnieG@mm.st)
 } {
     ## Opens imsmanifest.xml
-
-    # set utf-8 system encoding
-    encoding system utf-8
     
     # open manifest file with tDOM
-    set doc [dom parse [read [open $tmp_dir/$file]]]
+    set doc [dom parse [::tDOM::xmlReadFile $tmp_dir/$file]]
     # gets the manifest tree
     set manifest [$doc documentElement]
 

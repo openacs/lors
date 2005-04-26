@@ -38,9 +38,6 @@ ad_proc -public lors::imscp::getItems {
     @author Ernie Ghiglione (ErnieG@mm.st)
 
 } {
-    # set utf-8 system encoding
-    encoding system utf-8
-
     set items ""
     set itemx [$tree child all item]
 
@@ -214,9 +211,6 @@ ad_proc -public lors::imscp::manifest_add {
     @option creation_ip ip-address of the user that adds the category. [ad_conn peeraddr] used by default.
     @author Ernie Ghiglione (ErnieG@mm.st)
 } {
-    # set utf-8 system encoding
-    encoding system utf-8
-
    if {[empty_string_p $user_id]} {
         set user_id [ad_conn user_id]
     }
@@ -309,9 +303,6 @@ ad_proc -public lors::imscp::organization_add {
     @option creation_ip ip-address of the user that adds the category. [ad_conn peeraddr] used by default.
     @author Ernie Ghiglione (ErnieG@mm.st)
 } {
-    # set utf-8 system encoding
-    encoding system utf-8
-
    if {[empty_string_p $user_id]} {
         set user_id [ad_conn user_id]
     }
@@ -412,9 +403,6 @@ ad_proc -public lors::imscp::item_add {
     @option creation_ip ip-address of the user that adds the category. [ad_conn peeraddr] used by default.
     @author Ernie Ghiglione (ErnieG@mm.st)
 } {
-    # set utf-8 system encoding
-    encoding system utf-8
-
    if {[empty_string_p $user_id]} {
         set user_id [ad_conn user_id]
     }
@@ -540,9 +528,6 @@ ad_proc -public lors::imscp::addItems {
     @author Ernie Ghiglione (ErnieG@mm.st)
 
 } {
-    # set utf-8 system encoding
-    encoding system utf-8
-
     set retlist ""
 
     foreach item $itemlist {
@@ -629,9 +614,6 @@ ad_proc -public lors::imscp::resource_add {
     @option creation_ip ip-address of the user that adds the category. [ad_conn peeraddr] used by default.
     @author Ernie Ghiglione (ErnieG@mm.st)
 } {
-    # set utf-8 system encoding
-    encoding system utf-8
-
    if {[empty_string_p $user_id]} {
         set user_id [ad_conn user_id]
     }
