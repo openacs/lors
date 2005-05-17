@@ -207,8 +207,12 @@ ad_proc -public lors::imscp::bb6::get_coursetoc {
     @option file filename
     @author Ernie Ghiglione (ErnieG@mm.st)
 } {
+    
+    # set utf-8 system encoding
+    encoding system utf-8
+
     # open xml file
-    set doc [dom parse [::tDOM::xmlReadFile $file]]
+    set doc [dom parse [read [open $file]]]
     # coursetoc
     set coursetoc [$doc documentElement]
 
@@ -243,8 +247,12 @@ ad_proc -public lors::imscp::bb6::get_bb_doc {
     @option file filename
     @author Ernie Ghiglione (ErnieG@mm.st)
 } {
+
+    # set utf-8 system encoding
+    encoding system utf-8
+
     # open xml file
-    set doc [dom parse [::tDOM::xmlReadFile $file]]
+    set doc [dom parse [read [open $file]]]
     # content
     set content [$doc documentElement]
 
@@ -320,6 +328,10 @@ ad_proc -public lors::imscp::bb6::txt_to_html {
     @option filename directory and filename where we are putting the file
     @author Ernie Ghiglione (ErnieG@mm.st)
 } {
+
+    # set utf-8 system encoding
+    encoding system utf-8
+
     # get directory info
     set dirname [file dirname $filename]
 
@@ -377,8 +389,12 @@ ad_proc -public lors::imscp::bb6::get_announcement {
     @option file filename
     @author Ernie Ghiglione (ErnieG@mm.st)
 } {
+
+    # set utf-8 system encoding
+    encoding system utf-8
+
     # open xml file
-    set doc [dom parse [::tDOM::xmlReadFile $file]]
+    set doc [dom parse [read [open $file]]]
     # content
     set announcement [$doc documentElement]
 
@@ -481,7 +497,7 @@ ad_proc -private lors::imscp::bb6::process_package {
     # Now we delete the zip file as we
     # don't need it any more
     
-    file delete -force $path/$zipfile
+    exec rm -fr $path/$zipfile
     
     # Also we remove the actual file
     # children for the resource as
@@ -536,8 +552,12 @@ ad_proc -public lors::imscp::bb6::get_forum {
     @option file filename
     @author Ernie Ghiglione (ErnieG@mm.st)
 } {
+
+    # set utf-8 system encoding
+    encoding system utf-8
+
     # open xml file
-    set doc [dom parse [::tDOM::xmlReadFile $file]]
+    set doc [dom parse [read [open $file]]]
     # content
     set forum [$doc documentElement]
 
@@ -574,8 +594,11 @@ ad_proc -public lors::imscp::bb6::create_MD {
     @option file filename
     @author Ernie Ghiglione (ErnieG@mm.st)
 } {
+    # set utf-8 system encoding
+    encoding system utf-8
+
     # open manifest file with tDOM
-    set doc [dom parse [::tDOM::xmlReadFile $tmp_dir/$file]]
+    set doc [dom parse [read [open $tmp_dir/$file]]]
     # gets the manifest tree
     set manifest [$doc documentElement]
     # we add the xml namespace for dotLRN
@@ -590,7 +613,7 @@ ad_proc -public lors::imscp::bb6::create_MD {
     if {[empty_string_p $metadata]} {
 	
 	set filex res00001.dat
-	set docx [dom parse [::tDOM::xmlReadFile $tmp_dir/$filex]]
+	set docx [dom parse [read [open $tmp_dir/$filex]]]
 	# gets BB's course info
 	set course [$docx documentElement]
 	
@@ -646,8 +669,18 @@ ad_proc -public lors::imscp::bb6::clean_items {
     @option file filename
     @author Ernie Ghiglione (ErnieG@mm.st)
 } {
+
+    # set utf-8 system encoding
+    encoding system utf-8
+
+    # search for manifest file
+    set file $file
+
+    # set utf-8 system encoding
+    encoding system utf-8
+
     # open xml file
-    set doc [dom parse [::tDOM::xmlReadFile $tmp_dir/$file]]
+    set doc [dom parse [read [open $tmp_dir/$file]]]
 
     # gets the manifest tree
     set manifest [$doc documentElement]
@@ -775,7 +808,7 @@ ad_proc -public lors::imscp::bb6::clean_items {
 			ns_log Notice "\tand its corresponding resource [lindex $resource 2]\n"
 			ns_log Notice "\tDeleting files from FS: [lors::imsmd::getResource -node [lindex $resource 2] -att files]\n"
 			ns_log Notice "\tDeleting dat file: [lors::imsmd::getAtt [lindex $resource 2] bb:file]\n"
-			file delete $tmp_dir/[lors::imsmd::getAtt [lindex $resource 2] bb:file]
+			exec rm -fr $tmp_dir/[lors::imsmd::getAtt [lindex $resource 2] bb:file]
 			[lindex $resource 2] delete
 		    }
 
@@ -792,7 +825,7 @@ ad_proc -public lors::imscp::bb6::clean_items {
 			ns_log Notice "\tand its corresponding resource [lindex $resource 2]\n"
 			ns_log Notice "\tDeleting files from FS: [lors::imsmd::getResource -node [lindex $resource 2] -att files]\n"
 			ns_log Notice "\tDeleting dat file: [lors::imsmd::getAtt [lindex $resource 2] bb:file]\n"
-			file delete $tmp_dir/[lors::imsmd::getAtt [lindex $resource 2] bb:file]
+			exec rm -fr $tmp_dir/[lors::imsmd::getAtt [lindex $resource 2] bb:file]
 			[lindex $resource 2] delete
 		    }
 
@@ -817,7 +850,7 @@ ad_proc -public lors::imscp::bb6::clean_items {
 			ns_log Notice "\tand its corresponding resource [lindex $resource 2]\n"
 			ns_log Notice "\tDeleting files from FS: [lors::imsmd::getResource -node [lindex $resource 2] -att files]\n"
 			ns_log Notice "\tDeleting dat file: [lors::imsmd::getAtt [lindex $resource 2] bb:file]\n"
-			file delete $tmp_dir/[lors::imsmd::getAtt [lindex $resource 2] bb:file]
+ 			exec rm -fr $tmp_dir/[lors::imsmd::getAtt [lindex $resource 2] bb:file]
 			[lindex $resource 2] delete
 		    } 
 
@@ -865,9 +898,12 @@ ad_proc -public lors::imscp::bb6::extract_html {
     @author Ernie Ghiglione (ErnieG@mm.st)
 } {
     ## Opens imsmanifest.xml
+
+    # set utf-8 system encoding
+    encoding system utf-8
     
     # open manifest file with tDOM
-    set doc [dom parse [::tDOM::xmlReadFile $tmp_dir/$file]]
+    set doc [dom parse [read [open $tmp_dir/$file]]]
     # gets the manifest tree
     set manifest [$doc documentElement]
 
@@ -1128,7 +1164,7 @@ ad_proc -public lors::imscp::bb6::extract_html {
 		    }
 		}
 
-		file delete $tmp_dir/[lors::imsmd::getAtt $resource bb:file]
+		exec rm -fr $tmp_dir/[lors::imsmd::getAtt $resource bb:file]
 		ns_log Notice  "\n--DELETED FILE $tmp_dir/[lors::imsmd::getAtt $resource bb:file]--\n"
 		$resource removeAttribute bb:file
 		ns_log Notice  "\n--resource document END--\n"
@@ -1139,7 +1175,7 @@ ad_proc -public lors::imscp::bb6::extract_html {
 		# if it's not content, then we delete the resource and the
 		# dat file. 
 		ns_log Notice  "\n--resource qti-survey:  [lors::imsmd::getAtt $resource bb:file]  deleted\n"
-		file delete $tmp_dir/[lors::imsmd::getAtt $resource bb:file]
+		exec rm -fr $tmp_dir/[lors::imsmd::getAtt $resource bb:file]
 		ns_log Notice "Deleting qti-survey resource $resource"
 		$resource delete
 		
@@ -1147,7 +1183,7 @@ ad_proc -public lors::imscp::bb6::extract_html {
 	    }
 	    "resource/x-bb-announcement" {
 		ns_log Notice  "\n--resource ANNOUNCEMENT \n"
-		file delete $tmp_dir/[lors::imsmd::getAtt $resource bb:file]
+		exec rm -fr $tmp_dir/[lors::imsmd::getAtt $resource bb:file]
 		$resource delete
 		ns_log Notice "Deleting Announcement resource $resource"
 		ns_log Notice "Deleting Announcement resource $resource"
@@ -1155,42 +1191,42 @@ ad_proc -public lors::imscp::bb6::extract_html {
 	    }
 	    "resource/x-bb-discussionboard" {
 		ns_log Notice  "\n--resource FORUM POSTING \n"
-		file delete $tmp_dir/[lors::imsmd::getAtt $resource bb:file]
+		exec rm -fr $tmp_dir/[lors::imsmd::getAtt $resource bb:file]
 		$resource delete
 
 	    }
 	    "course/x-bb-gradebook" {
 		
 		ns_log Notice  "\n--resource gradebook:  [lors::imsmd::getAtt $resource bb:file]  deleted\n"
-		file delete $tmp_dir/[lors::imsmd::getAtt $resource bb:file]
+		exec rm -fr $tmp_dir/[lors::imsmd::getAtt $resource bb:file]
 		$resource delete
 		
 	    }
 	    "course/x-bb-coursenavsetting" {
 		
 		ns_log Notice  "\n--resource navsettings:  [lors::imsmd::getAtt $resource bb:file]  deleted\n"
-		file delete $tmp_dir/[lors::imsmd::getAtt $resource bb:file]
+		exec rm -fr $tmp_dir/[lors::imsmd::getAtt $resource bb:file]
 		$resource delete
 
 	    }
 	    "course/x-bb-courseappsetting" {
 
 		ns_log Notice  "\n--resource courseappsetting:  [lors::imsmd::getAtt $resource bb:file]  deleted\n"
-		file delete $tmp_dir/[lors::imsmd::getAtt $resource bb:file]
+		exec rm -fr $tmp_dir/[lors::imsmd::getAtt $resource bb:file]
 		$resource delete
 
 	    }
 	    "course/x-bb-coursesetting" {
 
 		ns_log Notice  "\n--resource coursesetting:  [lors::imsmd::getAtt $resource bb:file]  deleted\n"
-		file delete $tmp_dir/[lors::imsmd::getAtt $resource bb:file]
+		exec rm -fr $tmp_dir/[lors::imsmd::getAtt $resource bb:file]
 		$resource delete
 
 	    }
 	    "resource/x-bb-conference" {
 
 		ns_log Notice  "\n--resource conference:  [lors::imsmd::getAtt $resource bb:file]  deleted\n"
-		file delete $tmp_dir/[lors::imsmd::getAtt $resource bb:file]
+		exec rm -fr $tmp_dir/[lors::imsmd::getAtt $resource bb:file]
 		$resource delete
 
 	    }

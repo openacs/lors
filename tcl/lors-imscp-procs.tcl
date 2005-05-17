@@ -38,6 +38,7 @@ ad_proc -public lors::imscp::getItems {
     @author Ernie Ghiglione (ErnieG@mm.st)
 
 } {
+
     set items ""
     set itemx [$tree child all item]
 
@@ -190,7 +191,10 @@ ad_proc -public lors::imscp::manifest_add {
     {-community_id ""}
     {-user_id ""}
     {-creation_ip ""}
-	{-course_presentation_format "-1"}
+    {-version_id ""}
+    {-course_presentation_format "-1"}
+    {-man_folder_id ""}
+    {-content_folder_id ""}
 
 } {
     Inserts a new manifest according to the imsmanifest.xml file.
@@ -211,6 +215,7 @@ ad_proc -public lors::imscp::manifest_add {
     @option creation_ip ip-address of the user that adds the category. [ad_conn peeraddr] used by default.
     @author Ernie Ghiglione (ErnieG@mm.st)
 } {
+
    if {[empty_string_p $user_id]} {
         set user_id [ad_conn user_id]
     }
@@ -226,13 +231,52 @@ ad_proc -public lors::imscp::manifest_add {
     if {[empty_string_p $isscorm]} {
         set isscorm 0
     }
+    if {[empty_string_p $content_folder_id]} {
+        set content_folder_id $folder_id
+    }
 
     set class_key [dotlrn_community::get_community_type_from_community_id $community_id]
+
+    #########################################################################################
+    # Since now we dont use acs-objects for the manifest, then a new cr_item and revision
+    # needs to be done to store the manifest. The cr_item and cr_revision are created here
+    # in orther to use the CR API.
+
+    if { ![empty_string_p $man_folder_id]} {
+	# Get LORSM Manifest Folder folder_id
+	set parent_id $man_folder_id
+    } else {
+	set parent_id $folder_id
+    }
+    set content_type "ims_manifest_object" 
+    set name "$course_name"
+    if {[empty_string_p $version_id]} {
+        set item_id [content::item::new -name $name -item_id $man_id -content_type $content_type -parent_id $parent_id \
+                      -creation_date [dt_sysdate] -creation_user $user_id -creation_ip $creation_ip -context_id $package_id]
+    
+        # We give the user_id admin privilege over the item_id so only he/she can make changes to
+        # this course, unless it grants other user privileges
+        permission::grant -party_id $user_id -object_id $item_id -privilege admin
+        
+        # The new course has for default its isshared value false
+        set isshared f
+
+    } else {
+        set item_id $version_id
+	set isshared [db_string get_isshared "select im.isshared from ims_cp_manifests im where im.man_id = (
+                                                  select live_revision from cr_items where item_id = :version_id
+                                              ) "]
+    }
+
+    set revision_id [content::revision::new -title $name -content_type $content_type -creation_user $user_id \
+                         -creation_ip $creation_ip -item_id $item_id -is_live "t"] 
+
+    # Now the new revision_id will be sent to the sql function with the 
+    # additional information as before
 
     db_transaction {
         set manifest_id [db_exec_plsql new_manifest {
                 select ims_manifest__new (
-                                    :man_id,
                                     :course_name,
                                     :identifier,
                                     :version,
@@ -240,7 +284,7 @@ ad_proc -public lors::imscp::manifest_add {
                                     :hasmetadata,
                                     :parent_man_id,
                                     :isscorm,
-                                    :folder_id,
+                                    :content_folder_id,
                                     :fs_package_id,
                                     current_timestamp,
                                     :user_id,
@@ -248,13 +292,16 @@ ad_proc -public lors::imscp::manifest_add {
                                     :package_id,
                                     :community_id,
                                     :class_key,
-									:course_presentation_format
+				    :revision_id,
+                                    :isshared,
+				    :course_presentation_format
                                     );
 
         }
                         ]
 
     }
+
     return $manifest_id
 }
 
@@ -288,6 +335,7 @@ ad_proc -public lors::imscp::organization_add {
     {-package_id ""}
     {-user_id ""}
     {-creation_ip ""}
+    {-org_folder_id ""}
 
 } {
     Inserts a new organizations according to the imsmanifest.xml file.
@@ -303,7 +351,8 @@ ad_proc -public lors::imscp::organization_add {
     @option creation_ip ip-address of the user that adds the category. [ad_conn peeraddr] used by default.
     @author Ernie Ghiglione (ErnieG@mm.st)
 } {
-   if {[empty_string_p $user_id]} {
+
+    if {[empty_string_p $user_id]} {
         set user_id [ad_conn user_id]
     }
     if {[empty_string_p $creation_ip]} {
@@ -312,6 +361,22 @@ ad_proc -public lors::imscp::organization_add {
     if {[empty_string_p $package_id]} {
         set package_id [ad_conn package_id]
     }
+    
+    #--------------------------------------------------------------------------------------#
+    # Since now we dont use acs-objects for the organizations, then a new cr_item and revision
+    # needs to be done to store it. The cr_item and cr_revision are created here
+    # in orther to use the CR API. The item name probably has to change
+    
+    # Get LORSM Organizations Folder folder_id
+    set parent_id $org_folder_id
+    set content_type "ims_organization_object" 
+    set name "$identifier"
+    set item_id [content::item::new -name $name -item_id $org_id -content_type $content_type -parent_id $parent_id \
+                     -creation_date [dt_sysdate] -creation_user $user_id -creation_ip $creation_ip -context_id $package_id]
+
+
+    set revision_id [content::revision::new -title $name -content_type $content_type -creation_user $user_id \
+			 -creation_ip $creation_ip -item_id $item_id -is_live "t"] 
 
     db_transaction {
         set organization_id [db_exec_plsql new_organization {
@@ -325,7 +390,8 @@ ad_proc -public lors::imscp::organization_add {
                                     current_timestamp,
                                     :user_id,
                                     :creation_ip,
-                                    :package_id
+                                    :package_id,
+				    :revision_id
                                     );
 
         }
@@ -377,6 +443,7 @@ ad_proc -public lors::imscp::item_add {
     {-package_id ""}
     {-user_id ""}
     {-creation_ip ""}
+    -itm_folder_id:required
 
 } {
     Inserts a new item according to the info retrieved from the imsmanifest.xml file.
@@ -403,6 +470,7 @@ ad_proc -public lors::imscp::item_add {
     @option creation_ip ip-address of the user that adds the category. [ad_conn peeraddr] used by default.
     @author Ernie Ghiglione (ErnieG@mm.st)
 } {
+
    if {[empty_string_p $user_id]} {
         set user_id [ad_conn user_id]
     }
@@ -421,6 +489,24 @@ ad_proc -public lors::imscp::item_add {
     if {[empty_string_p $title]} {
         set title "No Title"
     }
+
+    #--------------------------------------------------------------------------------------#
+    # Since now we dont use acs-objects for the item, then a new cr_item and revision
+    # needs to be done to store it. The cr_item and cr_revision are created here
+    # in orther to use the CR API. The item name probably has to change
+
+    # Get LORSM Item Folder folder_id
+    set parent_id $itm_folder_id
+    set content_type "ims_item_object" 
+    set sysdate [dt_sysdate]
+    set name "$identifier"
+    set cr_item_id [content::item::new -name $name -item_id $item_id -content_type $content_type -parent_id $parent_id \
+                     -creation_date [dt_sysdate] -creation_user $user_id -creation_ip $creation_ip \
+                     -context_id $package_id -description $title]
+
+
+    set revision_id [content::revision::new -title $name -content_type $content_type -creation_user $user_id \
+			 -creation_ip $creation_ip -item_id $cr_item_id -is_live "t"] 
 
     db_transaction {
         set item_id [db_exec_plsql new_item {
@@ -444,7 +530,8 @@ ad_proc -public lors::imscp::item_add {
                                     current_timestamp,
                                     :user_id,
                                     :creation_ip,
-                                    :package_id
+                                    :package_id,
+				    :revision_id
                                     );
 
         }
@@ -457,34 +544,34 @@ ad_proc -public lors::imscp::item_add {
 	permission::toggle_inherit -object_id $item_id
 
 
-	set community_id [dotlrn_community::get_community_id]
+	#set community_id [dotlrn_community::get_community_id]
 
 	# Set read permissions for community/class dotlrn_admin_rel
 
-	set party_id_admin [db_string party_id {select segment_id from rel_segments \
+	#set party_id_admin [db_string party_id {select segment_id from rel_segments \
 						     where group_id = :community_id \
 						     and rel_type = 'dotlrn_admin_rel'}]
 
-	permission::grant -party_id $party_id_admin -object_id $item_id -privilege read
+	#permission::grant -party_id $party_id_admin -object_id $item_id -privilege read
 	
 
 	# Set read permissions for *all* other professors  within .LRN
 	# (so they can see the content)
 
-        set party_id_professor [db_string party_id {select segment_id from rel_segments \
+        #set party_id_professor [db_string party_id {select segment_id from rel_segments \
                                                      where rel_type = 'dotlrn_professor_profile_rel'}]
 
-	permission::grant -party_id $party_id_professor -object_id $item_id -privilege read
+	#permission::grant -party_id $party_id_professor -object_id $item_id -privilege read
 
 	# Set read permissions for *all* other admins within .LRN
 	# (so they can see the content)
 
-        set party_id_admins [db_string party_id {select segment_id from rel_segments \
+        #set party_id_admins [db_string party_id {select segment_id from rel_segments \
                                                      where rel_type = 'dotlrn_admin_profile_rel'}]
 
-	permission::grant -party_id $party_id_admins -object_id $item_id -privilege read
+	#permission::grant -party_id $party_id_admins -object_id $item_id -privilege read
 
-	ns_log Notice "ims_item_id ($item_id)  read permissions granted for community admins"
+	#ns_log Notice "ims_item_id ($item_id)  read permissions granted for community admins"
 
 
     }
@@ -514,6 +601,7 @@ ad_proc -public lors::imscp::item_delete {
 }
 
 ad_proc -public lors::imscp::addItems {
+    -itm_folder_id:required
     {-org_id:required}
     {itemlist} 
     {parent ""}
@@ -528,6 +616,7 @@ ad_proc -public lors::imscp::addItems {
     @author Ernie Ghiglione (ErnieG@mm.st)
 
 } {
+
     set retlist ""
 
     foreach item $itemlist {
@@ -552,7 +641,7 @@ ad_proc -public lors::imscp::addItems {
             set md_node $p_hasmetadata
             set p_hasmetadata 1
         }
-        
+
         set item_id [lors::imscp::item_add \
                          -org_id $p_org_id \
                          -parent_item $p_parent_item \
@@ -567,7 +656,8 @@ ad_proc -public lors::imscp::addItems {
                          -timelimitaction $p_timelimitaction \
                          -datafromlms $p_datafromlms \
                          -masteryscore $p_masteryscore \
-			 -dotlrn_permission $p_dotlrn_permission]
+			 -dotlrn_permission $p_dotlrn_permission \
+                         -itm_folder_id $itm_folder_id]
 
         if {$p_hasmetadata == 1} {
             set aa [lors::imsmd::addMetadata \
@@ -579,7 +669,8 @@ ad_proc -public lors::imscp::addItems {
         lappend retlist [list $item_id $p_identifierref]
 
         if { [llength $item] > 13} {
-            set subitem [lors::imscp::addItems -org_id $p_org_id [lindex $item 13] $item_id $tmp_dir]
+            set subitem [lors::imscp::addItems -itm_folder_id $itm_folder_id \
+                             -org_id $p_org_id [lindex $item 13] $item_id $tmp_dir]
             set retlist [concat $retlist $subitem]
         }
     }
@@ -598,6 +689,8 @@ ad_proc -public lors::imscp::resource_add {
     {-package_id ""}
     {-user_id ""}
     {-creation_ip ""}
+    {-num ""}
+    {-res_folder_id ""}
 
 } {
     Inserts a new resource according to the imsmanifest.xml file.
@@ -614,6 +707,7 @@ ad_proc -public lors::imscp::resource_add {
     @option creation_ip ip-address of the user that adds the category. [ad_conn peeraddr] used by default.
     @author Ernie Ghiglione (ErnieG@mm.st)
 } {
+
    if {[empty_string_p $user_id]} {
         set user_id [ad_conn user_id]
     }
@@ -623,6 +717,22 @@ ad_proc -public lors::imscp::resource_add {
     if {[empty_string_p $package_id]} {
         set package_id [ad_conn package_id]
     }
+
+    #--------------------------------------------------------------------------------------#
+    # Since now we dont use acs-objects for the resource, then a new cr_item and revision
+    # needs to be done to store it. The cr_item and cr_revision are created here
+    # in orther to use the CR API. The item name probably has to change
+
+    # Get LORSM Resource Folder folder_id
+    set parent_id $res_folder_id
+    set content_type "ims_resource_object" 
+    set name "$identifier"
+    set item_id [content::item::new -name $name -content_type $content_type -parent_id $parent_id \
+                     -creation_date [dt_sysdate] -creation_user $user_id -creation_ip $creation_ip -context_id $package_id]
+
+
+    set revision_id [content::revision::new -title $name -content_type $content_type -creation_user $user_id \
+			 -creation_ip $creation_ip -item_id $item_id -is_live "t"] 
 
     db_transaction {
         set resource_id [db_exec_plsql new_resource {
@@ -637,7 +747,8 @@ ad_proc -public lors::imscp::resource_add {
                                     current_timestamp,
                                     :user_id,
                                     :creation_ip,
-                                    :package_id
+                                    :package_id,
+				    :revision_id
                                     );
 
         }
@@ -876,7 +987,7 @@ ad_proc -public lors::imscp::expand_file {
     }
     
     if {$errp} {
-	file delete -force $tmp_dir
+        exec rm -fr $tmp_dir
 	ns_log Notice "lors::imscp::expand_file: extract type $type failed $errMsg"
 	return -code error "lors::imscp::expand_file: extract type $type failed $errMsg"
     }
@@ -945,7 +1056,7 @@ ad_proc -public lors::imscp::deltmpdir {
     #Now that we are done working on the upload we delete the tmp directory and files
     if [info exists tmp_dir] {
 	ns_log Notice "lors::imscp: Deleting $tmp_dir"
-	file delete -force $tmp_dir
+	exec rm -fr $tmp_dir
     }
 }
 

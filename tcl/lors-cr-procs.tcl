@@ -110,6 +110,7 @@ ad_proc -public lors::cr::add_folder {
     return $folder_id
 }
 
+
 ad_proc -public lors::cr::add_files {
     {-parent_id:required}
     {-files:required}
@@ -135,57 +136,21 @@ ad_proc -public lors::cr::add_files {
     foreach fle $files {
 
 	regexp {[^//\\]+$} $fle filename
-        # Get the filename part of the upload file
-#        if { ![regexp {[^//\\]+$} $fle filename] } {
-            # no match
-#            set filename $fle
-#        }
-        
-        # Get the title
-        #if { [empty_string_p $title] } {
-            set title $filename
-        #}
-    
+	set title $filename
         set mime_type [cr_filename_to_mime_type -create $fle]
-
-        #return [list $filename $parent_id $user_id $creation_ip $mime_type]
 
         # insert file into the CR
         db_transaction {
-
-            # create the file_id
-#            set file_id [db_exec_plsql file_add {
-#                select lors__new_lo (:filename, :parent_id, :user_id, :creation_ip);
-#            }]
 	    set description "uploaded using LORs"
 
 	    # add file
-	    set file_id [db_exec_plsql file_add {
-            	    	select file_storage__new_file (
-                   :title,                 -- title
-                   :parent_id,             -- parent_id
-                   :user_id,               -- creation_user
-                   :creation_ip,           -- creation_ip
-                    false                   -- indb_p
-	                );	
-		    }]
+	    set file_id [content::item::new -name $title -parent_id $parent_id -creation_user $user_id \
+			     -creation_ip $creation_ip]
 
-		# create the revision
-		#            set version_id [db_exec_plsql new_version {
-		#                select lors__new_lo_version (:filename, :filename, :mime_type, :file_id, :user_id, :creation_ip);
-		#            }]
 
 	    # add revision
-	    set version_id [db_exec_plsql new_version {
-			select file_storage__new_version (
-                                :filename,              -- filename
-                                :description,           -- description
-                                :mime_type,             -- mime_type
-                                :file_id,               -- item_id
-                                :user_id,               -- creation_user
-                                :creation_ip            -- creation_ip
-                        );
-            }]
+	    set version_id [content::revision::new -title $title -description $description -mime_type $mime_type \
+				-creation_user $user_id -creation_ip $creation_ip -item_id $file_id -is_live "t"]
 
 	    # move the actual file into the CR
 	    set cr_file [cr_create_content_file $file_id $version_id $fle]
@@ -200,4 +165,18 @@ ad_proc -public lors::cr::add_files {
         lappend retlist [list $fle $mime_type $parent_id $file_id $version_id $cr_file $file_size]
     }
     return $retlist
+}
+
+
+ad_proc -public lors::cr::get_item_id {
+    -name:required
+    -folder_id:required
+} {
+    Get the item_id of a file								     
+} {
+    if {[empty_string_p $folder_id]} {
+	set package_id [ad_conn package_id]
+	set folder_id [fs_get_root_folder -package_id $package_id]
+    }
+    return [db_exec_plsql get_item_id "select content_item__get_id ( :name, :folder_id, 'f' )"]
 }

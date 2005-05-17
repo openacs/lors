@@ -108,3 +108,4 @@ end;' language 'plpgsql';
 \i lors-imscp-create.sql
 \i lors-imscp-package-create.sql
 \i lors-imsmd-sc-create.sql
+

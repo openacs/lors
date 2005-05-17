@@ -23,7 +23,6 @@
 -- SCORM 1.2 Specs
 
 create or replace function ims_manifest__new (
-    integer,   -- manifest_id
     varchar,   -- course_name
     varchar,   -- identifier
     varchar,   -- version
@@ -39,54 +38,47 @@ create or replace function ims_manifest__new (
     integer,    -- package_id
     integer,    -- community_id
     varchar,     -- class_key
-	integer 	-- course_presentation_format
+    integer,     -- new revision_id for the item in the CR
+    boolean,      -- is shared
+    integer 	-- course_presentation_format
 )
 returns integer as '
 declare
-    p_man_id                		alias for $1;
-    p_course_name           		alias for $2;
-    p_identifier            		alias for $3;
-    p_version               		alias for $4;
-    p_orgs_default          		alias for $5;
-    p_hasmetadata           		alias for $6;
-    p_parent_man_id         		alias for $7;
-    p_isscorm               		alias for $8;
-    p_folder_id             		alias for $9;
-    p_fs_package_id         		alias for $10;
-    p_creation_date         		alias for $11;
-    p_creation_user         		alias for $12;
-    p_creation_ip           		alias for $13;
-    p_package_id            		alias for $14;
-    p_community_id          		alias for $15;
-    p_class_key            	 		alias for $16;
-	p_course_presentation_format	alias for $17;
-
-    v_man_id       integer;
+    p_course_name                alias for $1;
+    p_identifier                 alias for $2;
+    p_version                    alias for $3;
+    p_orgs_default               alias for $4;
+    p_hasmetadata                alias for $5;
+    p_parent_man_id              alias for $6;
+    p_isscorm                    alias for $7;
+    p_folder_id                  alias for $8;
+    p_fs_package_id              alias for $9;
+    p_creation_date              alias for $10;
+    p_creation_user              alias for $11;
+    p_creation_ip                alias for $12;
+    p_package_id                 alias for $13;
+    p_community_id               alias for $14;
+    p_class_key                  alias for $15;
+    p_revision_id                alias for $16;
+    p_isshared                   alias for $17;
+    p_course_presentation_format alias for $18;
 begin
-        v_man_id := acs_object__new (
-                p_man_id,               -- object_id
-                ''ims_manifest'',       -- object_type
-                p_creation_date,        -- creation_date
-                p_creation_user,        -- creation_user
-                p_creation_ip,          -- creation_ip
-                p_package_id,           -- context_id
-                ''t''                   -- security_inherit_p
-        );
-
-        insert into ims_cp_manifests
-        (man_id, course_name, identifier, version, orgs_default, hasmetadata, parent_man_id, isscorm, folder_id, fs_package_id, course_presentation_format)
-        values
-        (v_man_id, p_course_name, p_identifier, p_version, p_orgs_default, p_hasmetadata, p_parent_man_id, p_isscorm, p_folder_id, p_fs_package_id, p_course_presentation_format);
-
+  
+        -- we make an update here because the content::item::new already inserts a row in the ims_cp_manifests
+        update ims_cp_manifests
+        set course_name=p_course_name, identifier=p_identifier, version=p_version, 
+            orgs_default=p_orgs_default, hasmetadata=p_hasmetadata, parent_man_id=p_parent_man_id, 
+            isscorm=p_isscorm, folder_id=p_folder_id, fs_package_id=p_fs_package_id, isshared = p_isshared,
+            course_presentation_format=p_course_presentation_format
+        where man_id = p_revision_id;
 	-- now we add it to the manifest_class relation table
 
 	insert into ims_cp_manifest_class
 	(man_id, lorsm_instance_id, community_id, class_key, isenabled, istrackable)
 	values
-	(v_man_id, p_package_id, p_community_id, p_class_key, ''t'', ''f'');
-
-
-        return v_man_id;
+	(p_revision_id, p_package_id, p_community_id, p_class_key, ''t'', ''f'');
+        
+        return p_revision_id;
 end;
 ' language 'plpgsql';
 
@@ -114,7 +106,8 @@ create or replace function ims_organization__new (
     timestamp with time zone, -- creation_date
     integer,   -- creation_user
     varchar,    -- creation_ip
-    integer    -- package_id
+    integer,    -- package_id
+    integer    -- revision_id
 )
 returns integer as '
 declare
@@ -128,25 +121,15 @@ declare
     p_creation_user         alias for $8;
     p_creation_ip           alias for $9;
     p_package_id            alias for $10;
-
-    v_org_id       integer;
+    p_revision_id           alias for $11;
 begin
-        v_org_id := acs_object__new (
-                p_org_id,               -- object_id
-                ''ims_organization'',   -- object_type
-                p_creation_date,        -- creation_date
-                p_creation_user,        -- creation_user
-                p_creation_ip,          -- creation_ip
-                p_man_id,               -- context_id
-                ''t''                   -- security_inherit_p
-        );
+        -- we make an update here because the content::item::new already inserts a row in the ims_cp_organizations
+        update ims_cp_organizations
+        set man_id=p_man_id, identifier=p_identifier, structure=p_structure, 
+            org_title=p_title, hasmetadata=p_hasmetadata
+	where org_id = p_revision_id;
 
-        insert into ims_cp_organizations
-        (org_id, man_id, identifier, structure, title, hasmetadata)
-        values
-        (v_org_id, p_man_id, p_identifier, p_structure, p_title, p_hasmetadata);
-
-        return v_org_id;
+        return p_revision_id;
 end;
 ' language 'plpgsql';
 
@@ -184,7 +167,8 @@ create or replace function ims_item__new (
     timestamp with time zone, -- creation_date
     integer,   -- creation_user
     varchar,    -- creation_ip
-    integer    -- package_id
+    integer,    -- package_id
+    integer    -- revision_id
 )
 returns integer as '
 declare
@@ -208,25 +192,17 @@ declare
     p_creation_user         alias for $18;
     p_creation_ip           alias for $19;
     p_package_id            alias for $20;
-
-    v_item_id       integer;
+    p_revision_id           alias for $21;
 begin
-        v_item_id := acs_object__new (
-                p_item_id,              -- object_id
-                ''ims_item'',   -- object_type
-                p_creation_date,        -- creation_date
-                p_creation_user,        -- creation_user
-                p_creation_ip,          -- creation_ip
-                p_parent_item,          -- context_id
-                ''t''                   -- security_inherit_p
-        );
+        update ims_cp_items
+         set org_id=p_org_id, identifier=p_identifier, identifierref=p_identifierref, 
+             isvisible=p_isvisible, parameters=p_parameters, item_title=p_title, parent_item=p_parent_item, 
+             hasmetadata=p_hasmetadata, prerequisites_t=p_prerequisites_t, prerequisites_s=p_prerequisites_s, 
+             type=p_type, maxtimeallowed=p_maxtimeallowed, timelimitaction=p_timelimitaction, 
+             datafromlms=p_datafromlms, masteryscore=p_masteryscore
+             where ims_item_id = p_revision_id;
 
-        insert into ims_cp_items
-        (item_id, org_id, identifier, identifierref, isvisible, parameters, title, parent_item, hasmetadata, prerequisites_t, prerequisites_s, type, maxtimeallowed, timelimitaction, datafromlms, masteryscore)
-        values
-        (v_item_id, p_org_id, p_identifier, p_identifierref, p_isvisible, p_parameters, p_title, p_parent_item, p_hasmetadata, p_prerequisites_t, p_prerequisites_s, p_type, p_maxtimeallowed, p_timelimitaction, p_datafromlms, p_masteryscore);
-
-        return v_item_id;
+        return p_revision_id;
 end;
 ' language 'plpgsql';
 
@@ -255,7 +231,8 @@ create or replace function ims_resource__new (
     timestamp with time zone, -- creation_date
     integer,   -- creation_user
     varchar,    -- creation_ip
-    integer    -- package_id
+    integer,    -- package_id
+    integer    -- revision_id
 )
 returns integer as '
 declare
@@ -270,25 +247,14 @@ declare
     p_creation_user        alias for $9;
     p_creation_ip          alias for $10;
     p_package_id           alias for $11;
-
-    v_res_id       integer;
+    p_revision_id          alias for $12;
 begin
-        v_res_id := acs_object__new (
-                p_res_id,              -- object_id
-                ''ims_resource'',   -- object_type
-                p_creation_date,        -- creation_date
-                p_creation_user,        -- creation_user
-                p_creation_ip,          -- creation_ip
-                p_man_id,               -- context_id
-                ''t''                   -- security_inherit_p
-        );
-
-        insert into ims_cp_resources
-        (res_id, man_id, identifier, type, href, scorm_type, hasmetadata)
-        values
-        (v_res_id, p_man_id, p_identifier, p_type, p_href, p_scorm_type, p_hasmetadata);
-
-        return v_res_id;
+        update ims_cp_resources
+        set man_id=p_man_id, identifier=p_identifier, type=p_type, 
+        href=p_href, scorm_type=p_scorm_type, hasmetadata=p_hasmetadata
+        where res_id = p_revision_id;
+       
+        return p_revision_id;
 end;
 ' language 'plpgsql';
 
@@ -317,7 +283,7 @@ declare
     p_res_id            alias for $2;
 begin
 
-    insert into ims_cp_items_to_resources (item_id, res_id)
+    insert into ims_cp_items_to_resources (ims_item_id, res_id)
     values
     (p_item_id, p_res_id);
 
@@ -393,18 +359,18 @@ end;
 -- put in and correct some stuff for ims_cp_items
 
 -- function name
-create or replace function ims_item__name (integer)
+create or replace function ims_item__get_title (integer)
 returns varchar as '
 declare
   name__object_id        alias for $1;  
-  v_title                ims_cp_items.title%TYPE;  
+  v_title                ims_cp_items.item_title%TYPE;  
   v_object_id            integer;
 begin
 
-  select title 
+  select item_title 
   into v_title
   from ims_cp_items
-  where item_id = name__object_id;
+  where ims_item_id = name__object_id;
 
   return v_title;
   
@@ -413,7 +379,7 @@ end;' language 'plpgsql' stable strict;
 
 update acs_object_types
 set table_name = 'ims_cp_items',
-    name_method = 'ims_item__name',
+    name_method = 'ims_item__get_title',
     pretty_name = 'IMS Item',
     pretty_plural = 'IMS Items'
 where object_type = 'ims_item';

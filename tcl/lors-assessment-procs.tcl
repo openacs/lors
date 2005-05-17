@@ -43,7 +43,7 @@ ad_proc -public lors::assessment::ims_qti_register_assessment {
     }
 
     # Delete the temporary directory
-    file delete -force $tmpdirectory
+    exec rm -fr $tmpdirectory
 
     # Restore the package_id
     ad_conn -set package_id $current_package_id

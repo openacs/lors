@@ -140,8 +140,7 @@ namespace eval lors::imsmd {
                 set prefix [[$tree child all imsmd:record] prefix]
                 set lom [$tree child all $var_lom]
             } elseif { ![empty_string_p [$tree child all adlcp:location]] } {
-                dom parse [::tDOM::xmlReadFile $dir/[[$tree child all adlcp:location] text]] doc
-                set lom [$doc documentElement]
+                set lom [[dom parse [read [open $dir/[[$tree child all adlcp:location] text]]]] documentElement]
                 set prefix [$lom prefix]
             } else {
                 set lom 0

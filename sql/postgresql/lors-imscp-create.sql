@@ -24,76 +24,13 @@
 
 
 -----
---   Create the object types
------
-
-create function inline_0 ()
-returns integer as '
-begin
-
-    PERFORM acs_object_type__create_type (
-                ''ims_manifest'',          -- object_type
-                ''IMS_Manifest'',              -- pretty_name
-                ''IMS_Manifests'',             -- pretty_plural
-                ''acs_object'',            -- supertype
-                ''imscp_manifests'',       -- table_name
-                ''man_id'',                -- id_column
-                null                ,      -- name_method
-                ''f'',
-                null,
-                null
-        );
-    PERFORM acs_object_type__create_type (
-                ''ims_organization'',       -- object_type
-                ''IMS_Organization'',            -- pretty_name
-                ''IMS_Organizations'',           -- pretty_plural
-                ''ims_manifest'',              -- supertype
-                ''imscp_organizations'',     -- table_name
-                ''org_id'',                  -- id_column
-                null,                        -- name_method
-                ''f'',
-                null,
-                null
-        );
-    PERFORM acs_object_type__create_type (
-                ''ims_item'',       -- object_type
-                ''IMS_Item'',            -- pretty_name
-                ''IMS_Items'',           -- pretty_plural
-                ''ims_organization'',              -- supertype
-                ''imscp_items'',     -- table_name
-                ''item_id'',                  -- id_column
-                null,                        -- name_method
-                ''f'',
-                null,
-                null
-        );
-    PERFORM acs_object_type__create_type (
-                ''ims_resource'',       -- object_type
-                ''IMS_Resource'',            -- pretty_name
-                ''IMS_Resources'',           -- pretty_plural
-                ''ims_item'',              -- supertype
-                ''imscp_resources'',     -- table_name
-                ''org_id'',                  -- id_column
-                null,                        -- name_method
-                ''f'',
-                null,
-                null
-        );
-    return 0;
-end;' language 'plpgsql';
-
-select inline_0 ();
-drop function inline_0 ();
-
------
 --   Create tables
 ----
-
 -- Manifests
 create table ims_cp_manifests (
     man_id          integer
                     constraint ims_cp_man_id_fk
-                    references acs_objects(object_id)
+                    references cr_revisions
                     on delete cascade
                     constraint ims_cp_man_id_pk
                     primary key,
@@ -143,11 +80,28 @@ This is the package id for the file-storage instance that the folder
 belongs to.
 ';
 
+-- create ims manifest content type
+-- we do not use CR for content storage (at least not for ims_* objects) as these are just abstract aggregations
+-- and organization of objects. We use content types for the sake of versioning
+--
+select content_type__create_type (
+       'ims_manifest_object',    -- content_type
+       'content_revision',       -- supertype. We search revision content 
+                                 -- first, before item metadata
+       'IMS Manifest Object',    -- pretty_name
+       'IMS Manifest Objects',   -- pretty_plural
+       'ims_cp_manifests',        -- table_name
+       'man_id',	         -- id_column
+       'ims_manifest__get_title' -- name_method
+);
+
+
+
 -- Organizations
 create table ims_cp_organizations (
     org_id          integer
                     constraint ims_cp_org_id_fk
-                    references acs_objects(object_id)
+                    references cr_revisions
                     on delete cascade
                     constraint ims_cp_org_id_pk
                     primary key,
@@ -157,7 +111,7 @@ create table ims_cp_organizations (
                     on delete cascade,
     identifier      varchar(100),
     structure       varchar(100),
-    title           varchar(1000),
+    org_title       varchar(1000),
     hasmetadata     boolean default 'f' not null,
     isshared	    boolean default 'f' not null
 );
@@ -166,11 +120,27 @@ create table ims_cp_organizations (
 create index ims_cp_organizations__man_id_idx on ims_cp_organizations (man_id);
 
 
+-- create ims organization content type
+--
+select content_type__create_type (
+       'ims_organization_object',    -- content_type
+       'content_revision',       -- supertype. We search revision content 
+                                 -- first, before item metadata
+       'IMS Organization Object',    -- pretty_name
+       'IMS Organization Objects',   -- pretty_plural
+       'ims_cp_organizations',        -- table_name
+       'org_id',	         -- id_column
+       'ims_organization__get_title' -- name_method
+);
+
+
+
+
 -- Items
 create table ims_cp_items (
-    item_id         integer
+    ims_item_id     integer
                     constraint ims_cp_items_item_id_fk
-                    references acs_objects(object_id)
+                    references cr_revisions
                     on delete cascade
                     constraint ims_cp_items_item_id_pk
                     primary key,
@@ -183,7 +153,7 @@ create table ims_cp_items (
     -- isvisible 1 = Yes, 0 = No
     isvisible       boolean, 
     parameters      varchar(1000),
-    title           varchar(1000),
+    item_title           varchar(1000),
     parent_item     integer,
     hasmetadata     boolean default 'f' not null,
 -- SCORM extensions (based on SCORM 1.2 specs)
@@ -200,12 +170,27 @@ create table ims_cp_items (
 -- create index for ims_cp_items
 create index ims_cp_items__org_id_idx on ims_cp_items (org_id);
 
+-- create ims items content type
+--
+select content_type__create_type (
+       'ims_item_object',    -- content_type
+       'content_revision',       -- supertype. We search revision content 
+                                 -- first, before item metadata
+       'IMS Item Object',    -- pretty_name
+       'IMS Item Objects',   -- pretty_plural
+       'ims_cp_items',        -- table_name
+       'ims_item_id',	         -- id_column
+       'ims_item__get_title' -- name_method
+);
+
+
+
 -- Resources
     
 create table ims_cp_resources (
     res_id          integer
                     constraint ims_cp_resources_res_id_fk
-                    references acs_objects(object_id)
+                    references cr_revisions
                     on delete cascade
                     constraint ims_cp_resources_res_id_pk
                     primary key,
@@ -224,24 +209,38 @@ create table ims_cp_resources (
 -- create index for ims_cp_resources
 create index ims_cp_resources__man_id_idx on ims_cp_resources (man_id);
 
+-- create ims resources content type
+--
+select content_type__create_type (
+       'ims_resource_object',    -- content_type
+       'content_revision',       -- supertype. We search revision content 
+                                 -- first, before item metadata
+       'IMS Resource Object',    -- pretty_name
+       'IMS Resource Objects',   -- pretty_plural
+       'ims_cp_resources',        -- table_name
+       'res_id',	         -- id_column
+       'ims_resource__get_title' -- name_method
+);
+
+
 -- An item can have reference to one of more resources
 -- therefore we need a table that takes care of this multiple
 -- relationship
 
 create table ims_cp_items_to_resources (
-    item_id         integer
+    ims_item_id         integer
                     constraint ims_cp_items_to_res_item_id_fk
-                    references ims_cp_items(item_id)
+                    references ims_cp_items(ims_item_id)
                     on delete cascade,
     res_id          integer
                     constraint ims_cp_items_to_resources_fk
                     references ims_cp_resources(res_id)
                     on delete cascade,
-                    primary key (item_id, res_id)
+                    primary key (ims_item_id, res_id)
 );
 
 -- create index for ims_cp_items_to_resources
-create index ims_cp_items_to_resources__item_id_idx on ims_cp_items_to_resources (item_id);
+create index ims_cp_items_to_resources__item_id_idx on ims_cp_items_to_resources (ims_item_id);
 create index ims_cp_items_to_resources__res_id_idx on ims_cp_items_to_resources (res_id);
 
 -- Resource dependencies
