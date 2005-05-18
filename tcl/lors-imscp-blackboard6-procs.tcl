@@ -575,7 +575,7 @@ ad_proc -public lors::imscp::bb6::create_MD {
     @author Ernie Ghiglione (ErnieG@mm.st)
 } {
     # open manifest file with tDOM
-    set docx [dom parse [::tDOM::xmlReadFile $tmp_dir/$filex]]
+    set docx [dom parse [::tDOM::xmlReadFile $tmp_dir/$file]]
     # gets the manifest tree
     set manifest [$doc documentElement]
     # we add the xml namespace for dotLRN
