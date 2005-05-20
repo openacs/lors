@@ -164,7 +164,8 @@ create table ims_cp_items (
     timelimitaction varchar(1000),
     datafromlms     varchar(200),
     masteryscore    varchar(255),
-    isshared	    boolean default 'f' not null
+    isshared	    boolean default 'f' not null,
+    sort_order      integer
 );
 
 -- create index for ims_cp_items
@@ -266,7 +267,7 @@ create index ims_cp_dependencies__res_id_idx on ims_cp_dependencies (res_id);
 create table ims_cp_files (
     file_id         integer
                     constraint ims_cp_files_file_if_fk
-                    references cr_items(item_id)
+                    references cr_revisions(revision_id)
                     on delete cascade,
     res_id          integer
                     constraint ims_cp_file_res_id_fk
@@ -298,8 +299,8 @@ create table ims_cp_manifest_class (
 			constraint ims_cp_manifest_class__class_key_fk
   			references dotlrn_community_types(community_type),
     isenabled           boolean default 't' not null,
-    istrackable         boolean default 'f' not null,
-                        primary key (man_id, lorsm_instance_id)
+    istrackable         boolean default 'f' not null
+                        -- primary key (man_id, lorsm_instance_id)
 );
 
 comment on table ims_cp_manifest_class is '
