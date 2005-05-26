@@ -213,6 +213,7 @@ ad_proc -public lors::imscp::manifest_add {
     @option community_id Community ID
     @option user_id user that adds the category. [ad_conn user_id] used by default.
     @option creation_ip ip-address of the user that adds the category. [ad_conn peeraddr] used by default.
+    @option course_presentation_format course presentation format ID
     @author Ernie Ghiglione (ErnieG@mm.st)
 } {
 
