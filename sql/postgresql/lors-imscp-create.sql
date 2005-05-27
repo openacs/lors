@@ -106,7 +106,8 @@ create table ims_cp_manifests (
     isscorm         boolean,
     folder_id       integer,
     fs_package_id   integer,
-    isshared	    boolean default 'f' not null
+    isshared	    boolean default 'f' not null,
+    course_presentation_format integer  
 );
 
 comment on table ims_cp_manifests is '

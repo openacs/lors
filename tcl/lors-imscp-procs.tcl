@@ -190,6 +190,7 @@ ad_proc -public lors::imscp::manifest_add {
     {-community_id ""}
     {-user_id ""}
     {-creation_ip ""}
+    {-course_presentation_format "-1"}
 
 } {
     Inserts a new manifest according to the imsmanifest.xml file.
@@ -208,6 +209,7 @@ ad_proc -public lors::imscp::manifest_add {
     @option community_id Community ID
     @option user_id user that adds the category. [ad_conn user_id] used by default.
     @option creation_ip ip-address of the user that adds the category. [ad_conn peeraddr] used by default.
+    @option course_presentation_format course presentation format ID
     @author Ernie Ghiglione (ErnieG@mm.st)
 } {
    if {[empty_string_p $user_id]} {
@@ -246,7 +248,8 @@ ad_proc -public lors::imscp::manifest_add {
                                     :creation_ip,
                                     :package_id,
                                     :community_id,
-                                    :class_key
+                                    :class_key,
+				    :course_presentation_format
                                     );
 
         }
