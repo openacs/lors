@@ -96,6 +96,19 @@ select content_type__create_type (
 );
 
 
+create or replace function ims_manifest__get_title (integer)
+returns varchar as '
+declare
+  get_title__man_id             alias for $1;  
+  get_title__course_name        varchar(200);  
+begin
+  return course_name
+  from ims_cp_manifests
+  where man_id = get_title__man_id;
+
+end;' language 'plpgsql';
+
+
 
 -- Organizations
 create table ims_cp_organizations (
@@ -133,7 +146,17 @@ select content_type__create_type (
        'ims_organization__get_title' -- name_method
 );
 
+create or replace function ims_organization__get_title (integer)
+returns varchar as '
+declare
+  get_title__org_id             alias for $1;  
+  get_title__identifier        varchar(200);  
+begin
+  return identifier
+  from ims_cp_organizations
+  where org_id = get_title__org_id;
 
+end;' language 'plpgsql';
 
 
 -- Items
@@ -184,6 +207,17 @@ select content_type__create_type (
        'ims_item__get_title' -- name_method
 );
 
+create or replace function ims_item__get_title (integer)
+returns varchar as '
+declare
+  get_title__ims_item_id       	alias for $1;  
+  get_title__item_title        varchar(200);  
+begin
+  return item_title
+  from ims_cp_items
+  where ims_item_id = get_title__ims_item_id;
+
+end;' language 'plpgsql';
 
 
 -- Resources
@@ -222,6 +256,18 @@ select content_type__create_type (
        'res_id',	         -- id_column
        'ims_resource__get_title' -- name_method
 );
+
+create or replace function ims_resource__get_title (integer)
+returns varchar as '
+declare
+  get_title__res_id             alias for $1;  
+  get_title__identifier        varchar(200);  
+begin
+  return identifier
+  from ims_cp_resources
+  where res_id = get_title__res_id;
+
+end;' language 'plpgsql';
 
 
 -- An item can have reference to one of more resources
