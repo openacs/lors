@@ -96,6 +96,19 @@ select content_type__create_type (
 );
 
 
+create or replace function ims_manifest__get_title (integer)
+returns varchar as '
+declare
+  get_title__man_id             alias for $1;  
+  get_title__course_name        varchar(200);  
+begin
+  return course_name
+  from ims_cp_manifests
+  where man_id = get_title__man_id;
+
+end;' language 'plpgsql';
+
+
 
 -- Organizations
 create table ims_cp_organizations (
@@ -133,7 +146,17 @@ select content_type__create_type (
        'ims_organization__get_title' -- name_method
 );
 
+create or replace function ims_organization__get_title (integer)
+returns varchar as '
+declare
+  get_title__org_id             alias for $1;  
+  get_title__identifier        varchar(200);  
+begin
+  return identifier
+  from ims_cp_organizations
+  where org_id = get_title__org_id;
 
+end;' language 'plpgsql';
 
 
 -- Items
@@ -164,7 +187,8 @@ create table ims_cp_items (
     timelimitaction varchar(1000),
     datafromlms     varchar(200),
     masteryscore    varchar(255),
-    isshared	    boolean default 'f' not null
+    isshared	    boolean default 'f' not null,
+    sort_order      integer
 );
 
 -- create index for ims_cp_items
@@ -183,6 +207,17 @@ select content_type__create_type (
        'ims_item__get_title' -- name_method
 );
 
+create or replace function ims_item__get_title (integer)
+returns varchar as '
+declare
+  get_title__ims_item_id       	alias for $1;  
+  get_title__item_title        varchar(200);  
+begin
+  return item_title
+  from ims_cp_items
+  where ims_item_id = get_title__ims_item_id;
+
+end;' language 'plpgsql';
 
 
 -- Resources
@@ -221,6 +256,18 @@ select content_type__create_type (
        'res_id',	         -- id_column
        'ims_resource__get_title' -- name_method
 );
+
+create or replace function ims_resource__get_title (integer)
+returns varchar as '
+declare
+  get_title__res_id             alias for $1;  
+  get_title__identifier        varchar(200);  
+begin
+  return identifier
+  from ims_cp_resources
+  where res_id = get_title__res_id;
+
+end;' language 'plpgsql';
 
 
 -- An item can have reference to one of more resources
@@ -266,7 +313,7 @@ create index ims_cp_dependencies__res_id_idx on ims_cp_dependencies (res_id);
 create table ims_cp_files (
     file_id         integer
                     constraint ims_cp_files_file_if_fk
-                    references cr_items(item_id)
+                    references cr_revisions(revision_id)
                     on delete cascade,
     res_id          integer
                     constraint ims_cp_file_res_id_fk
@@ -298,8 +345,8 @@ create table ims_cp_manifest_class (
 			constraint ims_cp_manifest_class__class_key_fk
   			references dotlrn_community_types(community_type),
     isenabled           boolean default 't' not null,
-    istrackable         boolean default 'f' not null,
-                        primary key (man_id, lorsm_instance_id)
+    istrackable         boolean default 'f' not null
+                        -- primary key (man_id, lorsm_instance_id)
 );
 
 comment on table ims_cp_manifest_class is '

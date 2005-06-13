@@ -7,16 +7,16 @@
     <initial-install-p>f</initial-install-p>
     <singleton-p>t</singleton-p>
 
-    <version name="0.5d" url="http://openacs.org/repository/download/apm/LORS-05d.apm">
+    <version name="0.6d4" url="http://openacs.org/repository/download/apm/LORS-06d4.apm">
         <owner url="mailto:ernieg@mm.st">Ernie Ghiglione</owner>
-        <summary>IMS Content Packaging and Medata Services. 
-Implementation of IMS CP and MD for .LRN </summary>
+        <summary>IMS Content Packaging and Medata Services. Implementation of IMS CP and MD for .LRN </summary>
         <release-date>2004-08-06</release-date>
         <description format="text/html">This is a service and library to manage IMS Content Packaging and Metadata. From version 0.4d onward it supports SCORM and Blackboard imports</description>
         <license>GPL</license>
         <license_url>http://www.gnu.org/copyleft/gpl.html</license_url>
         <maturity>1</maturity>
-        <provides url="lors" version="0.5d"/>
+        <provides url="lors" version="0.6d4"/>
+        <requires url="dotlrn" version="2.1.0b1"/>
         <requires url="file-storage" version="5.1.0d"/>
 
         <callbacks>
