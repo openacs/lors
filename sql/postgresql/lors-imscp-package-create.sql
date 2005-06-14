@@ -38,7 +38,8 @@ create or replace function ims_manifest__new (
     varchar,    -- creation_ip
     integer,    -- package_id
     integer,    -- community_id
-    varchar     -- class_key
+    varchar,     -- class_key
+    integer 	-- course_presentation_format
 )
 returns integer as '
 declare
@@ -58,6 +59,7 @@ declare
     p_package_id            alias for $14;
     p_community_id          alias for $15;
     p_class_key             alias for $16;
+    p_course_presentation_format	alias for $17;
 
     v_man_id       integer;
 begin
@@ -72,9 +74,9 @@ begin
         );
 
         insert into ims_cp_manifests
-        (man_id, course_name, identifier, version, orgs_default, hasmetadata, parent_man_id, isscorm, folder_id, fs_package_id)
+        (man_id, course_name, identifier, version, orgs_default, hasmetadata, parent_man_id, isscorm, folder_id, fs_package_id, course_presentation_format)
         values
-        (v_man_id, p_course_name, p_identifier, p_version, p_orgs_default, p_hasmetadata, p_parent_man_id, p_isscorm, p_folder_id, p_fs_package_id);
+        (v_man_id, p_course_name, p_identifier, p_version, p_orgs_default, p_hasmetadata, p_parent_man_id, p_isscorm, p_folder_id, p_fs_package_id, p_course_presentation_format);
 
 	-- now we add it to the manifest_class relation table
 
