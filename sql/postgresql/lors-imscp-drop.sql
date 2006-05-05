@@ -15,9 +15,11 @@
 drop table ims_cp_dependencies;
 drop sequence ims_cp_dependencies_seq;
 drop table ims_cp_files;
+drop table ims_cp_items_to_resources;
 drop table ims_cp_resources;
 drop table ims_cp_items;
 drop table ims_cp_organizations;
+drop table ims_cp_manifest_class;
 drop table ims_cp_manifests;
 drop table lors_available_presentation_formats;
 

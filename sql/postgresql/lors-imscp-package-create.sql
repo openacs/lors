@@ -215,7 +215,7 @@ declare
     p_item_id        alias for $1;
 begin
         perform acs_object__delete(p_item_id);
-        delete from ims_cp_items where item_id = p_item_id;
+        delete from ims_cp_items where ims_item_id = p_item_id;
         return 0;
 end;
 ' language 'plpgsql';

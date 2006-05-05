@@ -10,5 +10,5 @@
   <msg key="lt_Transaction_Error_in__1">Transaction Error in MD schema shemaversion</msg>
   <msg key="lt_Transaction_Error_whi">Transaction Error while Adding Metadata</msg>
   <msg key="The_error_was">The error was:</msg>
-  <msg key="The_error_was_errmsg">The error was: $errmsg</msg>
+  <msg key="The_error_was_errmsg">The error was: %errmsg%</msg>
 </message_catalog>

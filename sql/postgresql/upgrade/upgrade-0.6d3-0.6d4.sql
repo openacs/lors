@@ -283,3 +283,9 @@ select content_type__create_type (
        'ims_resource__get_title' -- name_method
 );
 
+-- create cr_items for all the objects
+
+-- create cr_revisions for all the objects
+
+-- copy the data back to type-specific tables
+

@@ -1164,7 +1164,7 @@ namespace eval lors::imsmd {
 	set p_ims_md_id $acs_object
 	set path_to_file $dir
 
-	db_transaction {
+#	db_transaction {
             # General
 
 		# Title
@@ -1796,11 +1796,11 @@ namespace eval lors::imsmd {
 			}
 		    }
 		}
-	    } on_error {
-		ad_return_error "[_ lors.lt_Transaction_Error_in_]" "[_ lors._The] $errmsg"
-	    }
- 
-    }
+#	    } on_error {
+#		ad_return_error "[_ lors.lt_Transaction_Error_in_]" "[_ lors._The] $errmsg"
+#	    }
+# 
+#    }
 
 
     ad_proc -public addMetadata {
@@ -1829,7 +1829,7 @@ namespace eval lors::imsmd {
 
     
 	# inserts into db
-	db_transaction {
+#	db_transaction {
 
 	    # Checks if there's a LOM record
 	    if {$lom != 0} {
@@ -1841,9 +1841,9 @@ namespace eval lors::imsmd {
 		lors::imsmd::addLOM -lom $lom -prefix $prefix -acs_object $p_ims_md_id -dir $path_to_file
 
 	    }
-        }  on_error {
-	    ad_return_error "[_ lors.lt_Transaction_Error_whi]" "[_ lors.The_error_was] $errmsg"
-	}
+#        }  on_error {
+#	    ad_return_error "[_ lors.lt_Transaction_Error_whi]" "[_ lors.The_error_was] $errmsg"
+#	}
         return 1
     }
     
@@ -1874,15 +1874,15 @@ namespace eval lors::imsmd {
 
 	lors::imsmd::delMD -acs_object $p_ims_md_id
 
-	db_transaction {
+#	db_transaction {
             db_dml add_md {
                 insert into ims_md (ims_md_id, schema, schemaversion)
                 values
                 (:p_ims_md_id, :p_schema, :p_schemaversion)
             }
-	} on_error {
-	    ad_return_error "[_ lors.lt_Transaction_Error_in__1] " " [_ lors._The] $errmsg"
-	}
+#	} on_error {
+#	    ad_return_error "[_ lors.lt_Transaction_Error_in__1] " " [_ lors._The] $errmsg"
+#	}
     }
 
     ad_proc -public delMD {
@@ -1899,13 +1899,13 @@ namespace eval lors::imsmd {
 	if {[db_0or1row check_md_record {select ims_md_id from ims_md where ims_md_id = :p_ims_md_id}]} {
 
 	    # ... then delete it
-	    db_transaction {
+#	    db_transaction {
 		db_dml add_md {
 		    delete from ims_md where ims_md_id = :p_ims_md_id
 		}
-	    } on_error {
-		ad_return_error "[_ lors.lt_Transaction_deleting_]" "[_ lors.The_error_was] $errmsg"
-	    }
+#	    } on_error {
+#		ad_return_error "[_ lors.lt_Transaction_deleting_]" "[_ lors.The_error_was] $errmsg"
+#	    }
 	} 
 
     }
