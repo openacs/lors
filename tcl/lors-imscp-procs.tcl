@@ -275,7 +275,7 @@ ad_proc -public lors::imscp::manifest_add {
     # Now the new revision_id will be sent to the sql function with the 
     # additional information as before
 
-    db_transaction {
+#    db_transaction {
         set manifest_id [db_exec_plsql new_manifest {
                 select ims_manifest__new (
                                     :course_name,
@@ -301,27 +301,79 @@ ad_proc -public lors::imscp::manifest_add {
         }
                         ]
 
-    }
+#    }
 
     return $manifest_id
 }
 
 ad_proc -public lors::imscp::manifest_delete {
     -man_id:required
+    {-delete_all "f"}
 } {
     Deletes a  manifest.
 
-    @option man_id manifest id to be inserted.
+    @param man_id manifest id to be inserted.
+    @param delete_all t/f remove all dependent objects if true
     @author Ernie Ghiglione (ErnieG@mm.st)
 } {
     db_transaction {
-        set ret [db_exec_plsql delete_manifest {
-            select ims_manifest__delete (
-                                         :man_id
-                                         );
+        if {$delete_all} {
+            
+            # FIXME remove ims metadata
+            # To delete a course we need to
+
+            # remove file storage items
+
+            foreach file_item_id [db_list get_files "select item_id from cr_revisions cr, ims_cp_files f, ims_cp_resources r where f.res_id=r.res_id and r.man_id=:man_id and cr.revision_id=f.file_id"] {
+                # delete related file_storage files
+                content::item::delete -item_id $file_item_id
+            }
+            # remove ims_cp_files
+            # rows in ims_cp_files should be removed when ims_cp_resources row
+            # is removed (on delete cascade on res_id)
+
+            # remove ims_cp_items
+            foreach item_id [db_list get_items "select cr.item_id from cr_revisions cr, ims_cp_items i, ims_cp_items_to_resources ir, ims_cp_resources r 
+    where
+    r.man_id=:man_id
+    and
+    r.res_id=ir.res_id
+    and 
+    i.ims_item_id=ir.ims_item_id
+    and
+    cr.revision_id=i.ims_item_id"] {
+		db_dml delete_map "delete from ims_cp_items_map where ims_item_id in (select revision_id from cr_revisions where item_id=:item_id)"
+#		ad_return_complaint 1 "item_id $item_id ims_item_id $ims_item_id"
+		content::item::delete -item_id $item_id
+            }
+            # remove rows in ims_cp_items_to_resources
+            # rows in ims_cp_items_to_resources should be deleted when the
+            # ims_cp_items row is deleted (on delete cascade)
+	    
+            # remove ims_cp_resources    
+            foreach res_item_id [db_list get_res "select item_id from cr_revisions, ims_cp_resources where revision_id=res_id and man_id=:man_id"] {
+		content::item::delete -item_id $res_item_id
+            }
+            # remove rows in lorsm_cmi_core
+            db_dml delete_cmi "delete from lorsm_cmi_core where man_id=:man_id"
+            # remove rows in lorsm_student_track
+            db_dml delete_track "delete from lorsm_student_track where course_id = :man_id"
+            # FIXME see if other lorms tables need to be cleaned out
+
+            # remove ims_cp_organization
+            foreach org_item_id [db_list get_org "select item_id from cr_revisions, ims_cp_organizations where revision_id=org_id and man_id=:man_id"] {
+		db_dml delete_map "delete from ims_cp_items_map where org_id in (select revision_id from cr_revisions where item_id=:org_item_id)"
+		content::item::delete -item_id $org_item_id
+            }
+
+            # remove ims_cp_manifest_class
+            # this deletes the association between the course and all dotlrn
+            # classes where it was used
+            db_dml delete_manifest_class "delete from ims_cp_manifest_class where man_id=:man_id"
 
         }
-                ]
+
+        set ret [content::item::delete -item_id [content::revision::item_id -revision_id $man_id]]
     }
     return $ret
 }
@@ -379,7 +431,7 @@ ad_proc -public lors::imscp::organization_add {
     set revision_id [content::revision::new -title $name -content_type $content_type -creation_user $user_id \
 			 -creation_ip $creation_ip -item_id $item_id -is_live "t"] 
 
-    db_transaction {
+#    db_transaction {
         set organization_id [db_exec_plsql new_organization {
                 select ims_organization__new (
                                     :org_id,
@@ -398,7 +450,7 @@ ad_proc -public lors::imscp::organization_add {
         }
                         ]
 
-    }
+#    }
     return $organization_id
 }
 
@@ -410,7 +462,7 @@ ad_proc -public lors::imscp::organization_delete {
     @option org_id organization id to be inserted.
     @author Ernie Ghiglione (ErnieG@mm.st)
 } {
-    db_transaction {
+#    db_transaction {
         set ret [db_exec_plsql delete_organization {
                 select ims_organization__delete (
                                     :org_id
@@ -419,7 +471,7 @@ ad_proc -public lors::imscp::organization_delete {
         }
                 ]
 
-    }
+#    }
     return $ret
 }
 
@@ -509,7 +561,7 @@ ad_proc -public lors::imscp::item_add {
     set revision_id [content::revision::new -title $name -content_type $content_type -creation_user $user_id \
 			 -creation_ip $creation_ip -item_id $cr_item_id -is_live "t"] 
 
-    db_transaction {
+#    db_transaction {
         set item_id [db_exec_plsql new_item {
                 select ims_item__new (
                                     :item_id,
@@ -538,7 +590,7 @@ ad_proc -public lors::imscp::item_add {
         }
                         ]
 
-    }
+#    }
 
     if {![empty_string_p $dotlrn_permission]} {
 	
@@ -588,7 +640,7 @@ ad_proc -public lors::imscp::item_delete {
     @option item_id item id to be removed.
     @author Ernie Ghiglione (ErnieG@mm.st)
 } {
-    db_transaction {
+#    db_transaction {
         set ret [db_exec_plsql delete_item {
                 select ims_item__delete (
                                     :item_id
@@ -597,7 +649,7 @@ ad_proc -public lors::imscp::item_delete {
         }
                 ]
 
-    }
+#    }
     return $ret
 }
 
@@ -735,7 +787,7 @@ ad_proc -public lors::imscp::resource_add {
     set revision_id [content::revision::new -title $name -content_type $content_type -creation_user $user_id \
 			 -creation_ip $creation_ip -item_id $item_id -is_live "t"] 
 
-    db_transaction {
+#    db_transaction {
         set resource_id [db_exec_plsql new_resource {
                 select ims_resource__new (
                                     :res_id,
@@ -755,7 +807,7 @@ ad_proc -public lors::imscp::resource_add {
         }
                         ]
 
-    }
+#    }
     return $resource_id
 }
 
@@ -767,7 +819,7 @@ ad_proc -public lors::imscp::resource_delete {
     @option res_id resource id to be removed.
     @author Ernie Ghiglione (ErnieG@mm.st)
 } {
-    db_transaction {
+#    db_transaction {
         set ret [db_exec_plsql delete_resource {
                 select ims_resource__delete (
                                     :res_id
@@ -775,7 +827,7 @@ ad_proc -public lors::imscp::resource_delete {
 
         }
                 ]
-    }
+#    }
     return $ret
 }
 
@@ -789,7 +841,7 @@ ad_proc -public lors::imscp::item_to_resource_add {
     @option res_id the resource id
     @author Ernie Ghiglione (ErnieG@mm.st)
 } {
-    db_transaction {
+#    db_transaction {
         set item_to_resource [db_exec_plsql item_to_resources_add {
             select  ims_cp_item_to_resource__new (
                                          :item_id,
@@ -797,7 +849,7 @@ ad_proc -public lors::imscp::item_to_resource_add {
                                          );
         }
                        ]
-    }
+#    }
     return $item_to_resource
 }
 
@@ -812,7 +864,7 @@ ad_proc -public lors::imscp::dependency_add {
     @option identifier dependency identifier.
     @author Ernie Ghiglione (ErnieG@mm.st)
 } {
-    db_transaction {
+#    db_transaction {
         set dep_id [db_nextval ims_cp_dependencies_seq]
         set dependency [db_exec_plsql dependency_add {
             select  ims_dependency__new (
@@ -822,7 +874,7 @@ ad_proc -public lors::imscp::dependency_add {
                                          );
         }
                        ]
-    }
+#    }
     return $dep_id
 }
 
@@ -834,7 +886,7 @@ ad_proc -public lors::imscp::dependency_delete {
     @option dep_id dependency id to be removed.
     @author Ernie Ghiglione (ErnieG@mm.st)
 } {
-    db_transaction {
+#    db_transaction {
         set ret [db_exec_plsql delete_resource {
                 select ims_dependency__delete (
                                     :dep_id
@@ -842,7 +894,7 @@ ad_proc -public lors::imscp::dependency_delete {
 
         }
                 ]
-    }
+#    }
     return $ret
 }
 
@@ -874,9 +926,8 @@ ad_proc -public lors::imscp::file_add {
 
     set file_exists [db_0or1row file_ex "select file_id from ims_cp_files where file_id = :file_id and res_id = :res_id"]
 
-
     if {$file_exists == 0} {
-	db_transaction {
+#	db_transaction {
 	    set file [db_exec_plsql file_add {
             	select  ims_file__new (
                                          :file_id,
@@ -887,7 +938,7 @@ ad_proc -public lors::imscp::file_add {
                                          );
 	    }
 		     ]
-	}
+#	}
     }
     return $file_id
 }
@@ -1075,7 +1126,7 @@ ad_proc -public lors::imscp::isSCORM {
 
     #  Checks manifest metadata schema
     set metadata [$node child all metadata]
-
+    set metadata [lindex [$node getElementsByTagName metadata] 0]
     if {![empty_string_p $metadata]} {
         set MetadataSchema [lindex [lindex [lors::imsmd::getMDSchema $metadata] 0] 0]
         set man_scorm_metadataschema [regexp -nocase scorm $MetadataSchema]

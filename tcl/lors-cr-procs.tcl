@@ -95,7 +95,7 @@ ad_proc -public lors::cr::add_folder {
 
     #return [list $name $folder_name $parent_id $user_id $creation_ip]
 
-    db_transaction {
+#    db_transaction {
 
         # create the folder
 
@@ -103,10 +103,11 @@ ad_proc -public lors::cr::add_folder {
             select lors__new_folder (:name, :folder_name, :parent_id, :user_id, :creation_ip);
             }]
 	
-    } on_error {
-        ad_return_error "[_ lors.lt_Error_inserting_folde]" "[_ lors.The_error_was_errmsg]"
-        ad_script_abort
-    }
+#   } on_error {
+#        ad_return_error "[_ lors.lt_Error_inserting_folde]" "[_ lors.The_error_was_errmsg]"
+#        error "[_ lors.The_error_was_errmsg]"
+#        ad_script_abort
+#    }
     return $folder_id
 }
 
@@ -140,7 +141,7 @@ ad_proc -public lors::cr::add_files {
         set mime_type [cr_filename_to_mime_type -create $fle]
 
         # insert file into the CR
-        db_transaction {
+#        db_transaction {
 	    set description "uploaded using LORs"
 
 	    # add file
@@ -160,7 +161,7 @@ ad_proc -public lors::cr::add_files {
 	    # update the file path in the CR and the size on cr_revisions
 	    db_dml update_revi "update cr_revisions set content = '$cr_file', content_length = $file_size where revision_id = :version_id"
 
-        }
+#    }
 
         lappend retlist [list $fle $mime_type $parent_id $file_id $version_id $cr_file $file_size]
     }
