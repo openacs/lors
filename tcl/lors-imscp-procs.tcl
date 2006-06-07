@@ -384,7 +384,7 @@ ad_proc -public lors::imscp::organization_add {
     {-identifier ""}
     {-structure ""}
     {-title ""}
-    {-hasmetadata ""}
+    {-hasmetadata "f"}
     {-package_id ""}
     {-user_id ""}
     {-creation_ip ""}
@@ -484,7 +484,7 @@ ad_proc -public lors::imscp::item_add {
     {-parameters ""}
     {-title ""}
     {-parent_item ""}
-    {-hasmetadata ""}
+    {-hasmetadata "f"}
     {-prerequisites_t ""}
     {-prerequisites_s ""}
     {-type ""}
@@ -738,7 +738,7 @@ ad_proc -public lors::imscp::resource_add {
     {-type ""}
     {-href ""}
     {-scorm_type ""}
-    {-hasmetadata ""}
+    {-hasmetadata "f"}
     {-package_id ""}
     {-user_id ""}
     {-creation_ip ""}
@@ -1142,3 +1142,83 @@ ad_proc -public lors::imscp::isSCORM {
     }
 
 }
+
+ad_proc -public lors::imscp::item_add_from_object {
+    -object_id
+    -org_id
+    -folder_id
+    {-parent_item ""}
+    {-title ""}
+} {
+     Create an ims cp item from an existing acs_object
+    
+    @author Dave Bauer (dave@thedesignexperience.org)
+    @creation-date 2006-06-06
+    
+    @param object_id
+    @param org_id
+    @param folder_id
+    @param parent_item
+    @param title
+
+    @return ims_item_id
+    @error 
+} {
+
+    if {$parent_item eq ""} {
+        set parent_item $org_id
+    }
+    # get the title from acs objects
+
+    db_1row get_object "select object_type, title from acs_objects where object_id=:object_id" -column_array object
+    if {$title eq ""} {
+        set title $object(title)
+    }
+    set item_id [lors::imscp::item_add \
+                     -org_id $org_id \
+                     -itm_folder_id $folder_id \
+                     -identifier ${object(object_type)}_${object_id} \
+                     -identifierref $object_id \
+                     -parent_item $parent_item \
+                     -title $object(title)]
+
+    return $item_id
+
+}
+
+ad_proc -public lors::imscp::resource_add_from_object {
+    -object_id
+    -man_id
+    -folder_id
+} {
+     Create an ims_cp_resource from an acs_object
+
+    TODO since resources can be used for any course, we don't
+    need to add a seperate resource for each time an object is
+    used. We should return the existing res_id we just don't do that yet.
+    
+    @author Dave Bauer (dave@thedesignexperience.org)
+    @creation-date 2006-06-06
+    
+    @param object_id
+
+    @param man_id
+
+    @return res_id
+    
+    @error 
+} {
+    db_1row get_object "select object_type, title from acs_objects where object_id=:object_id" -column_array object    
+    if {$object(object_type) eq "content_item"} {
+        set object(object_type) [content::item::content_type -item_id $object_id]
+    }
+    set res_id [lors::imscp::resource_add \
+                    -man_id $man_id \
+                    -res_folder_id $folder_id \
+                    -identifier $object_id \
+                    -type $object(object_type) \
+                    -href "/o/$object_id"]
+
+    return $res_id
+}
+

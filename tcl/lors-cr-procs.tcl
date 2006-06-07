@@ -102,7 +102,17 @@ ad_proc -public lors::cr::add_folder {
         set folder_id [db_exec_plsql folder_create {
             select lors__new_folder (:name, :folder_name, :parent_id, :user_id, :creation_ip);
             }]
-	
+
+	content::folder::register_content_type -folder_id $folder_id -content_type "content_revision" \
+	    -include_subtypes "t" 
+	content::folder::register_content_type -folder_id $folder_id -content_type "content_folder" \
+	    -include_subtypes "t"
+	content::folder::register_content_type -folder_id $folder_id -content_type "content_symlink" \
+	    -include_subtypes "t"
+	content::folder::register_content_type -folder_id $folder_id -content_type "content_extlink" \
+	    -include_subtypes "t"
+
+    
 #   } on_error {
 #        ad_return_error "[_ lors.lt_Error_inserting_folde]" "[_ lors.The_error_was_errmsg]"
 #        error "[_ lors.The_error_was_errmsg]"
