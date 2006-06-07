@@ -6,6 +6,8 @@ ad_page_contract {
     @param return_url (defaults to ad_return_url)
 }
 
+# ad_form requires man_id NOT to be set if its new
+
 if {![info exists community_id]} {
     set community_id [dotlrn_community::get_community_id]
 }
@@ -47,6 +49,6 @@ ad_form -name course-new -export {return_url package_id folder_id} -form {
     if {![info exists return_url] || $return_url eq ""} {
         set return_url [export_vars -base course-structure {man_id}]
     }
-    ad_returnredirect -message "[_ lors Course_created]" $return_url
+    ad_returnredirect -message "[_ lors.Course_created]" $return_url
 
 }

@@ -252,7 +252,7 @@ ad_proc -public lors::imscp::manifest_add {
     set content_type "ims_manifest_object" 
     set name "$course_name"
     if {[empty_string_p $version_id]} {
-        set item_id [content::item::new -name $name -item_id $man_id -content_type $content_type -parent_id $parent_id \
+        set item_id [content::item::new -name $name -content_type $content_type -parent_id $parent_id \
                       -creation_date [dt_sysdate] -creation_user $user_id -creation_ip $creation_ip -context_id $package_id]
     
         # We give the user_id admin privilege over the item_id so only he/she can make changes to
@@ -269,7 +269,7 @@ ad_proc -public lors::imscp::manifest_add {
                                               ) "]
     }
 
-    set revision_id [content::revision::new -title $name -content_type $content_type -creation_user $user_id \
+    set revision_id [content::revision::new -revision_id $man_id -title $name -content_type $content_type -creation_user $user_id \
                          -creation_ip $creation_ip -item_id $item_id -is_live "t"] 
 
     # Now the new revision_id will be sent to the sql function with the 
