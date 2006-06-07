@@ -91,8 +91,8 @@ append orgs_list "<tr class=\"list-header\">
         <th colspan=\"3\" class=\"list\" valign=\"top\" style=\"background-color: #e0e0e0; font-weight: bold;\">[_ lorsm.Items]</th>
     </tr>
 "
-db_foreach organizations { } {
-
+db_multirow organizations organizations { } { }
+template::multirow foreach organizations {
 
     set total_items [db_string items_count {select count(*) from ims_cp_items where org_id=:org_id} -default 0]
     # We get the indent of the items in this org_id
