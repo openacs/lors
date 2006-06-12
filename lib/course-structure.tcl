@@ -115,6 +115,9 @@ template::multirow foreach organizations {
                       }
             if {$type eq \"webcontent\" && ![string equal $identifierref {}]} {set href \"$indent<a href='[apm_package_url_from_id_mem $fs_package_id]view/[db_string select_folder_key {select key from fs_folders where folder_id = :folder_id}]/[lorsm::fix_url -url $identifierref]'>$item_title</a>\"} else {set href \"<a href='[lors::object_url -url admin -object_id $res_identifier]'>$item_title</a>\"}]</td>" }
 	{ type   "\#lorsm.Type\#" "no_sort" "<td align=\"center\">$type</td>" }
+        { delete "\#acs-kernel.common_Delete\#" "no_sort" "<td><a href=\"[export_vars -base object-delete {item_id return_url}]\">Delete</a></td>" }
+        { move_up "Move Up" "no_sort" "<td><a href=\"[export_vars -base reorder-items {item_id return_url {dir up}}]\">Move Up</a></td>" }
+        { move_down "Move Down" "no_sort" "<td><a href=\"[export_vars -base reorder-items {item_id return_url {dir down}}]\">Move Down</a></td>" }
     }
 
     set table_item [ad_table -Tmissing_text $missing_text -Textra_vars $table_extra_vars -Theader_row_extra "style=\"background-color: #e0e0e0; font-weight: bold;\" class=\"list-header\"" -Ttable_extra_html $table_extra_html blah { } $table_def]
@@ -135,8 +138,8 @@ set tracker_url [export_vars -base tracker {man_id}]
 set sharer_url  [export_vars -base sharer {man_id folder_id return_url}]
 set formater_url  [export_vars -base formater {man_id return_url}]
 
-set add_type_options [list [list Assessment assessment] [list  Wiki wiki]]
+set add_type_options [list [list Questions assessment] [list  Content wiki]]
 ad_form -name add-new -action object-new -export {man_id} -form {
     {add_type:text(select) {label ""} {options $add_type_options}}
-    {add_new:text(submit) {label "#acs-kernel.common_Add#"}}    
+    {add_new:text(submit) {label {[_ acs-kernel.common_Add]}}}    
 }

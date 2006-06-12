@@ -6,27 +6,20 @@
         </th>
     </tr>
               <tr class="list-odd">
-              <td class="list" valign="top" style="background-color: #e0e0e0; font-weight: bold;" width="20%">
+              <td class="list" valign="top" style="background-color: #e0e0e0; font-weight: bold;" width="20%" >
                 #lorsm.Course_Name#
               </td>
               <td class="list" valign="top" style="background-color: #f0f0f0; font-weight: bold;">
-                <a href="@folder@">@course_name;noquote@</a>
+                @course_name;noquote@
+                (@identifier@)
+	 	#lorsm.Course_Versions#
               </td>
-          </tr>
+</tr>
+<tr class="list-even"><td class="list"  style="background-color: #e0e0e0; font-weight: bold; width="20%" ><a href="javascript:void(0)" onClick="document.getElementById('lors-advanced-course-structure').style.display='';">More Info</a></td><td class="list">&nbsp;</td></tr>
+</table>
+<div id="lors-advanced-course-structure" style="display:none;">
+<table class="list" cellpadding="3" cellspacing="1" width="70%">
               <tr class="list-even">
-              <td class="list" valign="top" style="background-color: #e0e0e0; font-weight: bold;" width="20%">
-                #lorsm.Version#
-              </td>
-              <td class="list" valign="top" style="background-color: #f0f0f0">
-                  <if @version@ eq "0">
-                       @version_msg;noquote@
-                  </if>
-                  <else>
-                       @version;noquote@ Course Versions
-                  </else>
-              </td>
-          </tr>
-              <tr class="list-odd">
               <td class="list" valign="top" style="background-color: #e0e0e0; font-weight: bold;" width="20%">
                 #lorsm.Metadata#
               </td>
@@ -42,14 +35,6 @@
 	        <else>
                   #lorsm.No#
                 </else>
-              </td>
-          </tr>
-              <tr class="list-even">
-              <td class="list" valign="top" style="background-color: #e0e0e0; font-weight: bold;" width="20%">
-                #lorsm.Identifier#
-              </td>
-              <td class="list" valign="top" style="background-color: #f0f0f0" width="80%">
-                @identifier@
               </td>
           </tr>
               <tr class="list-odd">
@@ -160,6 +145,9 @@
                  </div>
               </td>
           </tr>
+</table>
+</div>
+<table class="list" cellpadding="3" cellspacing="1" width="70%">
     <tr class="list-header">
         <th class="list" valign="top" style="background-color: #e0e0e0; font-weight: bold;" colspan="2">
          #lorsm.Organizations#

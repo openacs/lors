@@ -640,7 +640,8 @@ ad_proc -public lors::imscp::item_delete {
     @option item_id item id to be removed.
     @author Ernie Ghiglione (ErnieG@mm.st)
 } {
-#    db_transaction {
+    db_transaction {
+	content::item::delete -item_id [content::revision::item_id -revision_id $item_id]
         set ret [db_exec_plsql delete_item {
                 select ims_item__delete (
                                     :item_id
@@ -819,7 +820,8 @@ ad_proc -public lors::imscp::resource_delete {
     @option res_id resource id to be removed.
     @author Ernie Ghiglione (ErnieG@mm.st)
 } {
-#    db_transaction {
+    db_transaction {
+	content::item::delete -item_id [content::revision::item_id -revision_id $res_id]
         set ret [db_exec_plsql delete_resource {
                 select ims_resource__delete (
                                     :res_id
@@ -827,7 +829,7 @@ ad_proc -public lors::imscp::resource_delete {
 
         }
                 ]
-#    }
+    }
     return $ret
 }
 
@@ -1174,13 +1176,15 @@ ad_proc -public lors::imscp::item_add_from_object {
     if {$title eq ""} {
         set title $object(title)
     }
+    
     set item_id [lors::imscp::item_add \
                      -org_id $org_id \
                      -itm_folder_id $folder_id \
                      -identifier ${object(object_type)}_${object_id} \
                      -identifierref $object_id \
                      -parent_item $parent_item \
-                     -title $object(title)]
+                     -title $title]
+    db_dml set_sort_order "update ims_cp_items set sort_order = (select coalesce(max(sort_order),0) from ims_cp_items where parent_item=:parent_item) + 1 where ims_item_id=:item_id"
 
     return $item_id
 

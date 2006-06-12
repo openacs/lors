@@ -163,7 +163,7 @@
            AND
                 m.man_id = :man_id
         ORDER BY 
-                o.tree_sortkey, o.object_id
+                 i.sort_order,o.tree_sortkey,o.object_id
 
   </querytext>
 </fullquery>

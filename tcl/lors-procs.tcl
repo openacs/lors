@@ -43,9 +43,10 @@ ad_proc -public lors::object_url {
                     # FIXME either 1) make this magically work
                     # or 2) find the assessment_id and use 
                     # page anchor
+		    set assessment_id [db_string get_assessment_id "select ci.item_id, m.assessment_id from cr_items ci, cr_revisions cr, as_assessment_section_map m where cr.item_id=:object_id and cr.revision_id=m.section_id and ci.latest_revision=assessment_id"]
                     return [export_vars \
                                 -base ../assessment/asm-admin/one-a \
-                                {{section_id $object_id}}]
+                                {assessment_id}]
                 }
                 "::xowiki::Page" {
                     return [export_vars \

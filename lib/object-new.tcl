@@ -7,7 +7,9 @@ ad_page_contract {
 switch $add_type {
     assessment {
         # get a list of assessment
-        set options [db_list_of_lists get_assessments "select o.title,a.assessment_id from as_assessments a, cr_items i, acs_objects o where o.object_id=a.assessment_id and i.latest_revision=a.assessment_id"]
+	set dotlrn_package_id [dotlrn_community::get_community_id]
+	set assessment_package_id [dotlrn_community::get_applet_package_id -community_id $dotlrn_package_id -applet_key dotlrn_assessment]	
+        set options [db_list_of_lists get_assessments "select o.title,a.assessment_id from as_assessments a, cr_items i, acs_objects o where o.object_id=a.assessment_id and i.latest_revision=a.assessment_id and o.package_id=:assessment_package_id"]
     }
     wiki {
         # get a list of all the wiki pages
@@ -38,7 +40,7 @@ if {[llength options] > 10} {
     set search_p 1
 }
 
-set return_url [export_vars -base course_structure {man_id}]
+set return_url [export_vars -base course-structure {man_id}]
 
 # show available objects
 set options [concat [list [list "-- Choose --" ""]] $options]
@@ -56,76 +58,76 @@ ad_form -name choose -export {man_id add_type} -form {
             # we want one lors item per section
 
             
-            set sections [db_list_of_lists get_sections "select a.section_id,a.name,a.title from as_sectionsx a, as_assessment_section_map m where m.assessment_id=:existing_object and a.section_id=m.section_id"]
-            
-            foreach {section} $sections {
-                foreach {section_id section_name section_title} [lrange $section 0 2] {break}
+            set sections [db_list_of_lists get_sections "select a.item_id as section_item_id,a.name,a.title from cr_items ci, as_sectionsx a, as_assessment_section_map m where m.assessment_id=:existing_object and a.section_id=m.section_id and ci.latest_revision=m.assessment_id"]
 
+            foreach {section} $sections {
+
+                foreach {section_item_id section_name section_title} [lrange $section 0 2] {break}
+#		ad_return_complaint 1 "$section_name $section_title"
                 # make sure this section isn't already associated with this course
                 # we'll just let an admin add the assessment as many times
-                # as they like, if there a new sections they will get added
+               # as they like, if there a new sections they will get added
                 
-                if {![db_0or1row section_exists "select res_id from ims_cp_resources where identifier=:section_id and man_id=:man_id"]} {
+                if {![db_0or1row section_exists "select res_id from ims_cp_resources where identifier=:section_item_id and man_id=:man_id"]} {
+                    set res_id [lors::imscp::resource_add_from_object \
+                                    -man_id $man_id \
+                                    -object_id $section_item_id \
+                                    -folder_id $item_folder_id]
+		}
+		if {![db_0or1row item_exists "select ims_item_id as item_id from ims_cp_items where org_id=:org_id and identifier='as_sections_' || :section_item_id"]} {
                     set item_id [lors::imscp::item_add_from_object \
-                                     -object_id $section_id \
+                                     -object_id $section_item_id \
                                      -org_id $org_id \
                                      -folder_id $item_folder_id \
                                      -title $section_title]
+		    lors::imscp::item_to_resource_add \
+			-item_id $item_id \
+			-res_id $res_id
 
-                    # FIXME see if anyone is using this resource
-                    # already. objects should be # able to be resources
-                    # without being tied to one manifest, # since you can use
-                    # a resource in more than one course and # it doesn't make
-                    # sense to have a seperate row every time # we reuse an
-                    # object
+		}
+		# FIXME see if anyone is using this resource
+		# already. objects should be # able to be resources
+		# without being tied to one manifest, # since you can use
+		# a resource in more than one course and # it doesn't make
+		# sense to have a seperate row every time # we reuse an
+		# object
                     
-                    set res_id [lors::imscp::resource_add_from_object \
-                                    -man_id $man_id \
-                                    -object_id $section_id \
-                                    -folder_id $item_folder_id]
-
-                    lors::imscp::item_to_resource_add \
-                        -item_id $item_id \
-                        -res_id $res_id
-                } else {
-                    # FIXME update the title of the ims_cp_item for display
-                    # from the section title
-                }
-            }
+	    }
         }
         wiki {
-
+	    
             set page [::Generic::CrItem instantiate \
                           -item_id $existing_object]
             $page instvar {title page_title} {name page_name}
-                if {![db_0or1row section_exists "select res_id from ims_cp_resources where identifier=:existing_object and man_id=:man_id"]} {
-                    set item_id [lors::imscp::item_add_from_object \
-                                     -object_id $existing_object \
-                                     -org_id $org_id \
-                                     -folder_id $item_folder_id \
-                                     -title $page_title]
+	    if {![db_0or1row res_exists "select res_id from ims_cp_resources where identifier=:existing_object and man_id=:man_id"]} {
+		set res_id [lors::imscp::resource_add_from_object \
+				-man_id $man_id \
+				-object_id $existing_object \
+				-folder_id $item_folder_id]
 
-                    # FIXME see if anyone is using this resource
-                    # already. objects should be # able to be resources
-                    # without being tied to one manifest, # since you can use
-                    # a resource in more than one course and # it doesn't make
-                    # sense to have a seperate row every time # we reuse an
-                    # object
-                    
-                    set res_id [lors::imscp::resource_add_from_object \
-                                    -man_id $man_id \
-                                    -object_id $existing_object \
-                                    -folder_id $item_folder_id]
+	    }
+	    if {![db_0or1row item_exists "select ims_item_id from ims_cp_items where org_id=:org_id and identifier='::xowiki::Page_' || :existing_object"]} {	    
+		set item_id [lors::imscp::item_add_from_object \
+				 -object_id $existing_object \
+				 -org_id $org_id \
+				 -folder_id $item_folder_id \
+				 -title $page_title]
+	    }
+	    # FIXME see if anyone is using this resource
+	    # already. objects should be # able to be resources
+	    # without being tied to one manifest, # since you can use
+	    # a resource in more than one course and # it doesn't make
+	    # sense to have a seperate row every time # we reuse an
+	    # object
+	    
+	    lors::imscp::item_to_resource_add \
+		-item_id $item_id \
+		-res_id $res_id
 
-                    lors::imscp::item_to_resource_add \
-                        -item_id $item_id \
-                        -res_id $res_id
-                } else {
-                    # FIXME update the title of the ims_cp_item for display
-                    # from the section title
-                }
         }            
-    }
+    }	
+    ad_returnredirect $return_url
+    ad_script_abort
 }
 
 
