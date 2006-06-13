@@ -106,6 +106,10 @@
 <fullquery name="blah">
   <querytext>
         SELECT
+		'' as delete,
+                '' as up,
+                '' as down,
+
 		o.object_id,
  		repeat('&nbsp;', (tree_level(o.tree_sortkey) - :indent)* 3) as indent,
 		i.ims_item_id as item_id,
@@ -126,7 +130,7 @@
                 end as identifierref,
                 case 
 		  when i.identifierref <> ''
-                  then coalesce(ot.pretty_name,r.type)
+                  then r.type
                   else ''
                 end as type,
                 m.fs_package_id,

@@ -91,6 +91,9 @@ append orgs_list "<tr class=\"list-header\">
         <th colspan=\"3\" class=\"list\" valign=\"top\" style=\"background-color: #e0e0e0; font-weight: bold;\">[_ lorsm.Items]</th>
     </tr>
 "
+
+set pretty_types_map {as_sections Questions ::xowiki::Page Content}
+template::multirow create blah course_name delete down folder_id fs_package_id hasmetadata href identifierref indent isshared item_id item_title object_id org_id res_identifier type up
 db_multirow organizations organizations { } { }
 template::multirow foreach organizations {
 
@@ -98,34 +101,51 @@ template::multirow foreach organizations {
     # We get the indent of the items in this org_id
     set indent_list [lorsm::get_items_indent -org_id $org_id]
     template::util::list_of_lists_to_array $indent_list indent_array
+    ns_log notice "BEFORE MULTIROW [template::multirow size blah]"
+    db_multirow blah blah "" {
+	ns_log notice "Hi There"
+
+	set indent [string repeat "&nbsp;&nbsp;" [expr {$indent_array($item_id)-1}]]
+            if {$type eq "webcontent" && ![string equal $identifierref {}]} {
+		set href "[apm_package_url_from_id_mem $fs_package_id]view/[db_string select_folder_key {select key from fs_folders where folder_id = :folder_id}]/[lorsm::fix_url -url $identifierref]"
+	    } else {
+		set href "[lors::object_url -url admin -object_id $res_identifier]" 
+	    }
+	set type [string map $pretty_types_map $type]
+	set delete [export_vars -base object-delete {item_id return_url}]
+	set up [export_vars -base reorder-items {item_id {dir up} return_url}]
+	set down [export_vars -base reorder-items {item_id {dir down} return_url}]
+	ns_log notice "setting up '${up}' \n setting down '${down}'"
+    }
+    ns_log notice "AFTER MULTIROW [template::multirow size blah]"
 
     append orgs_list "<tr class=\"list-even\">"
     #"<td valign=\"top\" width=\"20%\">$org_title</td><td valign=\"top\" align=\"center\" width=\"5%\">$hasmetadata</td><td>"
-
     set indent [expr $indent +1]
-    set missing_text "[_ lorsm.Nothing_here]"
-    set return_url [export_vars -base [ns_conn url] man_id]
-    set table_extra_html { width="100%" }
-    set table_extra_vars {return_url indent_array lorsm_p}
-    set table_def {
-	{ title "\#lorsm.Item_Name\#" "no_sort" "<td>
-           [set indent  \"\"
-                      for { set i 0 } { $i < [expr $indent_array($item_id)-1]} { incr i } {
-                      append indent \"&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\"
-                      }
-            if {$type eq \"webcontent\" && ![string equal $identifierref {}]} {set href \"$indent<a href='[apm_package_url_from_id_mem $fs_package_id]view/[db_string select_folder_key {select key from fs_folders where folder_id = :folder_id}]/[lorsm::fix_url -url $identifierref]'>$item_title</a>\"} else {set href \"<a href='[lors::object_url -url admin -object_id $res_identifier]'>$item_title</a>\"}]</td>" }
-	{ type   "\#lorsm.Type\#" "no_sort" "<td align=\"center\">$type</td>" }
-        { delete "\#acs-kernel.common_Delete\#" "no_sort" "<td><a href=\"[export_vars -base object-delete {item_id return_url}]\">Delete</a></td>" }
-        { move_up "Move Up" "no_sort" "<td><a href=\"[export_vars -base reorder-items {item_id return_url {dir up}}]\">Move Up</a></td>" }
-        { move_down "Move Down" "no_sort" "<td><a href=\"[export_vars -base reorder-items {item_id return_url {dir down}}]\">Move Down</a></td>" }
-    }
+#     set indent [expr $indent +1]
+#     set missing_text "[_ lorsm.Nothing_here]"
+#     set return_url [export_vars -base [ns_conn url] man_id]
+#     set table_extra_html { width="100%" }
+#     set table_extra_vars {return_url indent_array lorsm_p}
+#     set table_def {
+# 	{ title "\#lorsm.Item_Name\#" "no_sort" "<td>
+#            [set indent  \"\"
+#                       for { set i 0 } { $i < [expr $indent_array($item_id)-1]} { incr i } {
+#                       append indent \"&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\"
+#                       }
+#             if {$type eq \"webcontent\" && ![string equal $identifierref {}]} {set href \"$indent<a href='[apm_package_url_from_id_mem $fs_package_id]view/[db_string select_folder_key {select key from fs_folders where folder_id = :folder_id}]/[lorsm::fix_url -url $identifierref]'>$item_title</a>\"} else {set href \"<a href='[lors::object_url -url admin -object_id $res_identifier]'>$item_title</a>\"}]</td>" }
+# 	{ type   "\#lorsm.Type\#" "no_sort" "<td align=\"center\">$type</td>" }
+#         { delete "\#acs-kernel.common_Delete\#" "no_sort" "<td><a href=\"[export_vars -base object-delete {item_id return_url}]\">Delete</a></td>" }
+#         { move_up "Move Up" "no_sort" "<td><a href=\"[export_vars -base reorder-items {item_id return_url {dir up}}]\">Move Up</a></td>" }
+#         { move_down "Move Down" "no_sort" "<td><a href=\"[export_vars -base reorder-items {item_id return_url {dir down}}]\">Move Down</a></td>" }
+#     }
 
-    set table_item [ad_table -Tmissing_text $missing_text -Textra_vars $table_extra_vars -Theader_row_extra "style=\"background-color: #e0e0e0; font-weight: bold;\" class=\"list-header\"" -Ttable_extra_html $table_extra_html blah { } $table_def]
+#     set table_item [ad_table -Tmissing_text $missing_text -Textra_vars $table_extra_vars -Theader_row_extra "style=\"background-color: #e0e0e0; font-weight: bold;\" class=\"list-header\"" -Ttable_extra_html $table_extra_html blah { } $table_def]
 
-    append orgs_list "$table_item"
+#     append orgs_list "$table_item"
 
 
-    append orgs_list "</td></tr>"
+#     append orgs_list "</td></tr>"
 
 } if_no_rows {
     append orgs_list "<tr class=\"list-odd\"><td></td></tr>"
@@ -143,3 +163,30 @@ ad_form -name add-new -action object-new -export {man_id} -form {
     {add_type:text(select) {label ""} {options $add_type_options}}
     {add_new:text(submit) {label {[_ acs-kernel.common_Add]}}}    
 }
+
+    template::list::create \
+	-name blah \
+	-multirow blah \
+	-elements {
+	    item_title {
+		label "\#lorsm.Item_Name\#"
+		link_url_col href
+	    }
+	    type {
+		label ""
+	    }
+	    delete {
+		label ""
+		display_template {delete}
+	    }
+	    up {
+		label ""
+		display_template {<if @blah.rownum@ gt 1><a href="@blah.up@">\#lors.Up\#</a></if>}
+	    }
+	    down {
+		label ""
+		display_template {<if @blah.rownum@ lt @blah:rowcount@><a href="@blah.down@">\#lors.Down\#</a></if>}
+	    }
+	}
+
+
