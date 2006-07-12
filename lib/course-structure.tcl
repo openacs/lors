@@ -13,6 +13,7 @@ ad_page_contract {
 }
 set package_id [ad_conn package_id]
 set community_id [dotlrn_community::get_community_id]
+set return_url [ad_return_url]
 
 ad_proc -public getFolderKey {
     {-object_id:required}
@@ -177,15 +178,17 @@ ad_form -name add-new -action object-new -export {man_id} -form {
 	    }
 	    delete {
 		label ""
-		display_template {delete}
+		display_template {
+		    <a href="@blah.delete;noquote@">delete</a>
+		}
 	    }
 	    up {
 		label ""
-		display_template {<if @blah.rownum@ gt 1><a href="@blah.up@">\#lors.Up\#</a></if>}
+		display_template {<if @blah.rownum@ gt 1><a href="@blah.up@">Up</a></if>}
 	    }
 	    down {
 		label ""
-		display_template {<if @blah.rownum@ lt @blah:rowcount@><a href="@blah.down@">\#lors.Down\#</a></if>}
+		display_template {<if @blah.rownum@ lt @blah:rowcount@><a href="@blah.down@">Down</a></if>}
 	    }
 	}
 
