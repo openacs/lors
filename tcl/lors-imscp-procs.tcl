@@ -1176,7 +1176,9 @@ ad_proc -public lors::imscp::item_add_from_object {
     if {$title eq ""} {
         set title $object(title)
     }
-    
+    if {$object(object_type) eq "content_item"} {
+        set object(object_type) [content::item::content_type -item_id $object_id]
+    }    
     set item_id [lors::imscp::item_add \
                      -org_id $org_id \
                      -itm_folder_id $folder_id \
