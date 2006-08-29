@@ -306,10 +306,10 @@ Multiplicity: single value
 Type: DateType
 ';
 
--- create sequence for ims_md_life_cycle_contrib_entity table
-create sequence ims_md_life_cycle_contrib_entity_seq start 1;
+-- create sequence for ims_md_life_cycle_contrib_enty table
+create sequence ims_md_lf_c_contrib_enty_seq start 1;
 
-create table ims_md_life_cycle_contrib_entity (
+create table ims_md_life_cycle_contrib_enty (
     ims_md_lf_cont_enti_id  integer
                             constraint ims_md_lf_cont_enti_id_pk
                             primary key,
@@ -320,7 +320,7 @@ create table ims_md_life_cycle_contrib_entity (
     entity                  varchar(1000)
 );
 
-comment on table ims_md_life_cycle_contrib_entity is '
+comment on table ims_md_life_cycle_contrib_enty is '
 Entity or entities involved, most relevant first.
 Multiplicity: ordered list; smallest permitted maximum items: 40; vCard
 Domain: vCard <http://www.imc.org/pdi/>
@@ -419,7 +419,7 @@ DateType
 ';
 
 -- create sequence for ims_md_metadata_contrib_entity table
-create sequence ims_md_metadata_contrib_entity_seq start 1;
+create sequence ims_md_meta_contrib_enty_seq start 1;
 
 create table ims_md_metadata_contrib_entity (
     ims_md_md_cont_enti_id  integer
@@ -549,7 +549,7 @@ create table ims_md_technical_location (
 );
 
 -- create index for ims_md_technical_location
-create index ims_md_te_location__imd_md_id_idx on ims_md_technical_location (ims_md_id);
+create index ims_md_te_loc_imd_md_id_idx on ims_md_technical_location (ims_md_id);
 
 comment on column ims_md_technical_location.type is '
 Values permitted: TEXT or URI
@@ -563,7 +563,7 @@ Type: String (1000 char)
 ';
 
 -- create sequence for ims_md_technical_requirement table
-create sequence ims_md_technical_requirement_seq start 1;
+create sequence ims_md_tech_requirement_seq start 1;
 
 create table ims_md_technical_requirement (
     ims_md_te_rq_id     integer
@@ -803,7 +803,7 @@ create table ims_md_educational_descrip (
 );
 
 -- create index for ims_md_educational_descrip
-create index ims_md_ed_descrip__imd_md_id_idx on ims_md_educational_descrip (ims_md_id);
+create index ims_md_ed_desc_imd_md_id_idx on ims_md_educational_descrip (ims_md_id);
 
 comment on table ims_md_educational_descrip is '
 Comments on how the learning object is to be used.
@@ -919,10 +919,10 @@ single value
 LangStringType (1000 char)
 ';
 
---create seq for ims_md_relation_resource_catalog table
-create sequence ims_md_relation_resource_catalog_seq start 1;
+--create seq for ims_md_rel_resource_catalog table
+create sequence ims_md_rel_resource_cat_seq start 1;
 
-create table ims_md_relation_resource_catalog (
+create table ims_md_rel_resource_catalog (
     ims_md_re_re_ca_id  integer
                         constraint ims_md_re_re_ca_id_pk
                         primary key,
@@ -935,21 +935,21 @@ create table ims_md_relation_resource_catalog (
     entry_s             varchar(1000)
 );
 
--- create index for ims_md_relation_resource_catalog
-create index ims_md_re_re_cat__imd_md_re_re_id_idx on ims_md_relation_resource_catalog (ims_md_re_re_id);
+-- create index for ims_md_rel_resource_catalog
+create index ims_md_re__md_re_re_id_idx on ims_md_rel_resource_catalog (ims_md_re_re_id);
 
-comment on table ims_md_relation_resource_catalog is '
+comment on table ims_md_rel_resource_catalog is '
 Description of the other resource.
 unordered list; smallest permitted maximum: 10 items
 ';
 
-comment on column ims_md_relation_resource_catalog.catalog is '
+comment on column ims_md_rel_resource_catalog.catalog is '
 Source of following string value
 single value
 String (1000 char)
 ';
 
-comment on column ims_md_relation_resource_catalog.entry_l is '
+comment on column ims_md_rel_resource_catalog.entry_l is '
 Actual value
 single value
 LangStringType (1000 char)
@@ -969,7 +969,7 @@ create table ims_md_annotation (
                         references ims_md(ims_md_id)
                         on delete cascade,
     entity              varchar(1000),
-    date                varchar(200),
+    annotation_date     varchar(200),
     date_l              varchar(100),
     date_s              varchar(1000)
 );
@@ -998,7 +998,7 @@ create table ims_md_annotation_descrip (
 );
 
 -- create index for ims_md_annotation_descrip
-create index ims_md_an_desc__imd_md_an_id_idx on ims_md_annotation_descrip (ims_md_an_id);
+create index ims_md_an_desc_md_an_id_idx on ims_md_annotation_descrip (ims_md_an_id);
 
 comment on table ims_md_annotation_descrip is '
 Annotation descriptions. It can have descriptions in several languages
@@ -1052,7 +1052,7 @@ create table ims_md_classification_descrip (
 );
 
 -- create index for ims_md_classification_descrip
-create index ims_md_cl_desc__imd_md_cl_id_idx on ims_md_classification_descrip (ims_md_cl_id);
+create index ims_md_cl_desc_md_cl_id_idx on ims_md_classification_descrip (ims_md_cl_id);
 
 comment on table ims_md_classification_descrip is '
 A textual description of learning object relative to its stated purpose.
@@ -1060,7 +1060,7 @@ single value. However, it can have several langstrings
 ';
 
 --create seq for ims_md_classification_taxpath table
-create sequence ims_md_classification_taxpath_seq start 1;
+create sequence ims_md_classif_taxpath_seq start 1;
 
 create table ims_md_classification_taxpath (
     ims_md_cl_ta_id     integer
@@ -1087,10 +1087,10 @@ A specific classification.
 single value
 ';
 
---create seq ims_md_classification_taxpath_taxon table
-create sequence ims_md_classification_taxpath_taxon_seq start 1;
+--create seq ims_md_classif_taxpath_taxon table
+create sequence ims_md_classif_tpath_taxon_seq start 1;
 
-create table ims_md_classification_taxpath_taxon (
+create table ims_md_classif_taxpath_taxon (
     ims_md_cl_ta_ta_id  integer
                         constraint ims_md_cl_ta_ta_id_pk
                         primary key,
@@ -1104,7 +1104,7 @@ create table ims_md_classification_taxpath_taxon (
     --	0 	Information Science
     --	 1	 Information Processing
     --	  2	  Metadata 
-    --ims_md_classification_taxpath_taxon
+    --ims_md_classif_taxpath_taxon
     -- The hierarchy to be inserted by the SCORM package
     hierarchy           varchar(10),
     identifier          varchar(100),
@@ -1112,16 +1112,16 @@ create table ims_md_classification_taxpath_taxon (
     entry_s             varchar(500)
 );
 
--- create index for ims_md_classification_taxpath_taxon
-create index ims_md_cl_tax_tax__imd_md_cl_ta_id_idx on ims_md_classification_taxpath_taxon (ims_md_cl_ta_id);
+-- create index for ims_md_classif_taxpath_taxon
+create index ims_md_cl_t_t__md_cl_ta_id_idx on ims_md_classif_taxpath_taxon (ims_md_cl_ta_id);
 
-comment on table ims_md_classification_taxpath_taxon is '
+comment on table ims_md_classif_taxpath_taxon is '
 An entry in a classification. An ordered list of Taxons creates a taxonomic path, i.e. "taxonomic stairway": this is a path from a more general to more specific entry in a classification.
 ordered list; smallest permitted maximum: 15 items
 ';
 
 --create seq for ims_md_classification_keyword table
-create sequence ims_md_classification_keyword_seq start 1;
+create sequence ims_md_classif_keyword_seq start 1;
 
 create table ims_md_classification_keyword (
     ims_md_cl_ke_id     integer

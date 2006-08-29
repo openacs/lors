@@ -130,7 +130,7 @@ create table ims_cp_organizations (
 );
 
 -- create index for ims_cp_organizations
-create index ims_cp_organizations__man_id_idx on ims_cp_organizations (man_id);
+create index ims_cp_org_man_id_idx on ims_cp_organizations (man_id);
 
 
 -- create ims organization content type
@@ -287,8 +287,8 @@ create table ims_cp_items_to_resources (
 );
 
 -- create index for ims_cp_items_to_resources
-create index ims_cp_items_to_resources__item_id_idx on ims_cp_items_to_resources (ims_item_id);
-create index ims_cp_items_to_resources__res_id_idx on ims_cp_items_to_resources (res_id);
+create index ims_cp_items_2_res_item_id_idx on ims_cp_items_to_resources (ims_item_id);
+create index ims_cp_items_2_res_id_idx on ims_cp_items_to_resources (res_id);
 
 -- Resource dependencies
 
@@ -306,7 +306,7 @@ create table ims_cp_dependencies (
 );
 
 -- create index for ims_cp_dependencies
-create index ims_cp_dependencies__res_id_idx on ims_cp_dependencies (res_id);
+create index ims_cp_dependencies_res_id_idx on ims_cp_dependencies (res_id);
 
 -- Resource files
 
