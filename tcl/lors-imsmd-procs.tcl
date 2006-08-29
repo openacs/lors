@@ -1322,11 +1322,11 @@ namespace eval lors::imsmd {
 
 
 		    foreach entity $p_entities {
-			set p_ims_md_lf_cont_enti_id [db_nextval ims_md_life_cycle_contrib_entity_seq]
+			set p_ims_md_lf_cont_enti_id [db_nextval ims_md_lf_c_contrib_enty_seq]
 			set p_entity $entity
 			
 			db_dml add_new_lifecycle_contrib_entity {
-			    insert into ims_md_life_cycle_contrib_entity (ims_md_lf_cont_enti_id, ims_md_lf_cont_id, entity)
+			    insert into ims_md_life_cycle_contrib_enty (ims_md_lf_cont_enti_id, ims_md_lf_cont_id, entity)
 			    values
 			    (:p_ims_md_lf_cont_enti_id, :p_ims_md_lf_cont_id, :p_entity)
 			}
@@ -1378,7 +1378,7 @@ namespace eval lors::imsmd {
 		    set p_cont_date_l [lindex [lindex [lindex $contribute 2] 1] 0]
 		    set p_cont_date_s [lindex [lindex [lindex $contribute 2] 1] 1]
 
-		    set p_ims_md_md_cont_enti_id [db_nextval ims_md_metadata_contrib_entity_seq]
+		    set p_ims_md_md_cont_enti_id [db_nextval ims_md_meta_contrib_enty_seq]
 		    set p_entity [lindex [lindex $contribute 1] 0]
 
 		    db_dml add_new_metadata_contrib {
@@ -1432,11 +1432,7 @@ namespace eval lors::imsmd {
 		set requirements [lors::imsmd::mdTechnical -element requirement -node $lom -prefix $prefix]
 
 		# Adds Technical size, installation remarks, otherplatformrequirements, duration
-		db_dml add_new_technical {
-		    insert into ims_md_technical (ims_md_id, t_size, instl_rmrks_l, instl_rmrks_s, otr_plt_l, otr_plt_s, duration, duration_l, duration_s)
-		    values
-		    (:p_ims_md_id, :p_size, :p_instl_rmks_l, :p_instl_rmks_s, :p_otr_plt_l, :p_otr_plt_s, :p_duration, :p_duration_l, :p_duration_s)
-		}
+		db_dml add_new_technical {}
 
 		# Adds Technical Format
 
@@ -1444,11 +1440,7 @@ namespace eval lors::imsmd {
 		    set p_ims_md_te_fo_id [db_nextval ims_md_technical_format_seq]
 		    set p_format $format
 		    
-		    db_dml add_new_technical_format {
-			insert into ims_md_technical_format (ims_md_te_fo_id, ims_md_id, format)
-			values
-			(:p_ims_md_te_fo_id, :p_ims_md_id, :p_format)
-		    }
+		    db_dml add_new_technical_format {}
 		}
 		
 		# Adds Technical Location
@@ -1458,17 +1450,13 @@ namespace eval lors::imsmd {
 		    set p_type [lindex $location 1]
 		    set p_location [lindex $location 0]
 
-		    db_dml add_new_technical_location {
-			insert into ims_md_technical_location (ims_md_te_lo_id, ims_md_id, type, location)
-			values
-			(:p_ims_md_te_lo_id, :p_ims_md_id, :p_type, :p_location)
-		    }
+		    db_dml add_new_technical_location {}
 		}
 
 		# Adds Technical Requirements
 
 		foreach requirement $requirements {
-		    set p_ims_md_te_rq_id [db_nextval ims_md_technical_requirement_seq]
+		    set p_ims_md_te_rq_id [db_nextval ims_md_tech_requirement_seq]
 		    set p_type_s [lindex [lindex [lindex $requirement 0] 0] 1]
 		    set p_type_v [lindex [lindex [lindex $requirement 0] 1] 1]
 		    set p_name_s [lindex [lindex [lindex $requirement 1] 0] 1]
@@ -1476,11 +1464,7 @@ namespace eval lors::imsmd {
 		    set p_min_version [lindex $requirement 2]
 		    set p_max_version [lindex $requirement 3]
 
-		    db_dml add_new_technical_requirement {
-			insert into ims_md_technical_requirement (ims_md_te_rq_id, ims_md_id, type_s, type_v, name_s, name_v, min_version, max_version)
-			values
-			(:p_ims_md_te_rq_id, :p_ims_md_id, :p_type_s, :p_type_v, :p_name_s, :p_name_v, :p_min_version, :p_max_version)
-		    }
+		    db_dml add_new_technical_requirement {}
 		}
 
 
@@ -1523,11 +1507,7 @@ namespace eval lors::imsmd {
 
 
 		# Adds Educational interactivitytype, interactivitylevel, semanticdensity, difficulty, typical_learning_time
-		db_dml add_new_educational {
-		    insert into ims_md_educational (ims_md_id, int_type_s, int_type_v, int_level_s, int_level_v, sem_density_s, sem_density_v, difficulty_s, difficulty_v, type_lrn_time, type_lrn_time_l, type_lrn_time_s)
-		    values
-		    (:p_ims_md_id, :p_int_type_s, :p_int_type_v, :p_int_level_s, :p_int_level_v, :p_sem_density_s, :p_sem_density_v, :p_difficulty_s, :p_difficulty_v, :p_type_lrn_time, :p_type_lrn_time_l, :p_type_lrn_time_s)
-		}
+		db_dml add_new_educational {}
 
 		# Adds descriptions
 		foreach descrip $descrips {
@@ -1535,11 +1515,7 @@ namespace eval lors::imsmd {
 		    set p_descrip_l [lindex $descrip 0]
 		    set p_descrip_s [lindex $descrip 1]
 
-		    db_dml add_new_descriptions {
-			insert into ims_md_educational_descrip (ims_md_ed_de_id, ims_md_id, descrip_l, descrip_s)
-			values
-			(:p_ims_md_ed_de_id, :p_ims_md_id, :p_descrip_l, :p_descrip_s)
-		    }
+		    db_dml add_new_descriptions {}
 		}
 
 		# Adds learningresourcetype
@@ -1548,11 +1524,7 @@ namespace eval lors::imsmd {
 		    set p_lrt_s [lindex [lindex $lrt 0] 1]
 		    set p_lrt_v [lindex [lindex $lrt 1] 1]
 		    
-		    db_dml add_new_learningresourcetypes {
-			insert into ims_md_educational_lrt (ims_md_ed_lr_id, ims_md_id, lrt_s, lrt_v)
-			values
-			(:p_ims_md_ed_lr_id, :p_ims_md_id, :p_lrt_s, :p_lrt_v)
-		    }
+		    db_dml add_new_learningresourcetypes {}
 		}
 
 		# Adds intendedenduserrole
@@ -1561,11 +1533,7 @@ namespace eval lors::imsmd {
 		    set p_ieur_s [lindex [lindex $ieur 0] 1]
 		    set p_ieur_v [lindex [lindex $ieur 1] 1]
 
-		    db_dml add_new_intendedenduserroles {
-			insert into ims_md_educational_ieur (ims_md_ed_ie_id, ims_md_id, ieur_s, ieur_v)
-			values
-			(:p_ims_md_ed_ie_id, :p_ims_md_id, :p_ieur_s, :p_ieur_v)
-		    }
+		    db_dml add_new_intendedenduserroles {}
 		}
 
 		# Adds context
@@ -1574,11 +1542,7 @@ namespace eval lors::imsmd {
 		    set p_context_s [lindex [lindex $context 0] 1]
 		    set p_context_v [lindex [lindex $context 1] 1]
 		    
-		    db_dml add_new_context {
-			insert into ims_md_educational_context (ims_md_ed_co_id, ims_md_id, context_s, context_v)
-			values
-			(:p_ims_md_ed_co_id, :p_ims_md_id, :p_context_s, :p_context_v)
-		    }
+		    db_dml add_new_context {}
 		}
 
 		# Adds typicalagerange
@@ -1587,11 +1551,7 @@ namespace eval lors::imsmd {
 		    set p_tar_l [lindex $tar 0]
 		    set p_tar_s [lindex $tar 1]
 
-		    db_dml add_new_typicalagerange {
-			insert into ims_md_educational_tar (ims_md_ed_ta_id, ims_md_id, tar_l, tar_s)
-			values
-			(:p_ims_md_ed_ta_id, :p_ims_md_id, :p_tar_l, :p_tar_s)
-		    }
+		    db_dml add_new_typicalagerange {}
 		}
 
 		#  Adds Languages
@@ -1599,11 +1559,7 @@ namespace eval lors::imsmd {
 		    set p_ims_md_ed_la_id [db_nextval ims_md_educational_lang_seq]
 		    set p_language $lang
 		    
-		    db_dml add_new_language {
-			insert into ims_md_educational_lang (ims_md_ed_la_id, ims_md_id, language)
-			values
-			(:p_ims_md_ed_la_id, :p_ims_md_id, :p_language)
-		    }
+		    db_dml add_new_language {}
 		}
 
 		# Rights
@@ -1621,11 +1577,7 @@ namespace eval lors::imsmd {
 		set p_descrip_l [lindex [lindex $p_descrip 0] 0]
 		set p_descrip_s [lindex [lindex $p_descrip 0] 1]
 
-		db_dml add_new_rights {
-		    insert into ims_md_rights (ims_md_id, cost_s, cost_v, caor_s, caor_v, descrip_l, descrip_s)
-		    values
-		    (:p_ims_md_id, :p_cost_s, :p_cost_v, :p_caor_s, :p_caor_v, :p_descrip_l, :p_descrip_s)
-		}
+		db_dml add_new_rights {}
 
 		# Relation
 
@@ -1639,22 +1591,14 @@ namespace eval lors::imsmd {
 		    set p_kind_v [lindex [lindex [lindex [lindex $relation 0] 0] 1] 1]
 		    
 		    # Adds kind
-		    db_dml add_new_relation {
-			insert into ims_md_relation (ims_md_re_id, ims_md_id, kind_s, kind_v)
-			values
-			(:p_ims_md_re_id, :p_ims_md_id, :p_kind_s, :p_kind_v)
-		    }
+		    db_dml add_new_relation {}
 		    
 		    set p_ims_md_re_re_id [db_nextval ims_md_relation_resource_seq]
 		    set p_descrip_l [lindex [lindex [lindex $relation 1] 0] 0]
 		    set p_descrip_s [lindex [lindex [lindex $relation 1] 0] 1]
 
 		    # adds description to resource
-		    db_dml add_new_relation_descrip {
-			insert into ims_md_relation_resource (ims_md_re_re_id, ims_md_re_id, identifier, descrip_l, descrip_s)
-			values
-			(:p_ims_md_re_re_id, :p_ims_md_re_id, null, :p_descrip_l, :p_descrip_s)
-		    }
+		    db_dml add_new_relation_descrip {}
 
 		    # catalogentries
 		    set catalogentries [lindex $relation 2]
@@ -1662,17 +1606,12 @@ namespace eval lors::imsmd {
 		    # adds catalogentries
 		    foreach catalogentry $catalogentries {
 
-			set p_ims_md_re_re_ca_id [db_nextval ims_md_relation_resource_catalog_seq]
+			set p_ims_md_re_re_ca_id [db_nextval ims_md_rel_resource_cat_seq]
 			set p_catalog [lindex $catalogentry 0]
 			set p_entry_l [lindex [lindex $catalogentry 1] 0]
 			set p_entry_s [lindex [lindex $catalogentry 1] 1]
 			
-			db_dml add_new_catalogentry {
-			    
-			    insert into ims_md_relation_resource_catalog (ims_md_re_re_ca_id, ims_md_re_re_id, catalog, entry_l, entry_s)
-			    values
-			    (:p_ims_md_re_re_ca_id, :p_ims_md_re_re_id, :p_catalog, :p_entry_l, :p_entry_s)
-			}
+			db_dml add_new_catalogentry {}
 		    }
 
 		}
@@ -1690,11 +1629,7 @@ namespace eval lors::imsmd {
 
 		    set p_descriptions [lindex $annotation 2]
 
-		    db_dml add_new_annotation {
-			insert into ims_md_annotation (ims_md_an_id, ims_md_id, entity, date, date_l, date_s)
-			values
-			(:p_ims_md_an_id, :p_ims_md_id, :p_entity, :p_date, :p_date_l, :p_date_s)
-		    }
+		    db_dml add_new_annotation {}
 
 		    foreach description $p_descriptions {
 
@@ -1702,11 +1637,7 @@ namespace eval lors::imsmd {
 			set p_descrip_l [lindex $description 0]
 			set p_descrip_s [lindex $description 1]
 			
-			db_dml add_new_ann_descriptions {
-			    insert into ims_md_annotation_descrip (ims_md_an_de_id, ims_md_an_id, descrip_l, descrip_s)
-			    values
-			    (:p_ims_md_an_de_id, :p_ims_md_an_id, :p_descrip_l, :p_descrip_s)
-			}
+			db_dml add_new_ann_descriptions {}
 
 		    }
 
@@ -1724,11 +1655,7 @@ namespace eval lors::imsmd {
 		    set p_purpose_s [lindex [lindex [lindex [lindex [lindex $class 0] 0] 0] 0] 1]
 		    set p_purpose_v [lindex [lindex [lindex [lindex [lindex $class 0] 0] 0] 1] 1]
 		    
-		    db_dml add_new_classification {
-			insert into ims_md_classification (ims_md_cl_id, ims_md_id, purpose_s, purpose_v)
-			values
-			(:p_ims_md_cl_id, :p_ims_md_id, :p_purpose_s, :p_purpose_v)
-		    }
+		    db_dml add_new_classification {}
 
 		    # description
 		    set descriptions [lindex [lindex $class 0] 1]
@@ -1738,11 +1665,7 @@ namespace eval lors::imsmd {
 			set p_descrip_l [lindex $desc 0]
 			set p_descrip_s [lindex $desc 1]
 			
-			db_dml add_new_description {
-			    insert into ims_md_classification_descrip (ims_md_cl_de_id, ims_md_cl_id, descrip_l, descrip_s)
-			    values
-			    (:p_ims_md_cl_de_id, :p_ims_md_cl_id, :p_descrip_l, :p_descrip_s)
-			}
+			db_dml add_new_description {}
 		    }
 
 		    # taxonpath
@@ -1754,29 +1677,21 @@ namespace eval lors::imsmd {
 			
 			set p_source_l [lindex [lindex $p_source 0] 0]
 			set p_source_s [lindex [lindex $p_source 0] 1]
-			set p_ims_md_cl_ta_id [db_nextval ims_md_classification_taxpath_seq]
+			set p_ims_md_cl_ta_id [db_nextval ims_md_classif_taxpath_seq]
 
 			set taxons [lindex $taxonpath 1]
 
-			db_dml add_new_taxonpaths {
-			    insert into ims_md_classification_taxpath (ims_md_cl_ta_id, ims_md_cl_id, source_l, source_v)
-			    values
-			    (:p_ims_md_cl_ta_id, :p_ims_md_cl_id, :p_source_l, :p_source_s)
-			}
+			db_dml add_new_taxonpaths {}
 
 			foreach taxon $taxons {
 
-			    set p_ims_md_cl_ta_ta_id [db_nextval ims_md_classification_taxpath_taxon_seq]
+			    set p_ims_md_cl_ta_ta_id [db_nextval ims_md_classif_tpath_taxon_seq]
 			    set p_hierarchy [lindex $taxon 0]
 			    set p_identifier [lindex $taxon 1]
 			    set p_entry_l  [lindex [lindex $taxon 2] 0]
 			    set p_entry_s  [lindex [lindex $taxon 2] 1]
 			    
-			    db_dml add_new_taxons {
-				insert into ims_md_classification_taxpath_taxon (ims_md_cl_ta_ta_id, ims_md_cl_ta_id, hierarchy, identifier, entry_l, entry_s)
-				values
-				(:p_ims_md_cl_ta_ta_id, :p_ims_md_cl_ta_id, :p_hierarchy, :p_identifier, :p_entry_l, :p_entry_s)
-			    }
+			    db_dml add_new_taxons {}
 
 			}
 		    }        
@@ -1785,15 +1700,11 @@ namespace eval lors::imsmd {
 		    set keywords [lindex [lindex $class 0] 3]
 		    
 		    foreach keyword $keywords {
-			set p_ims_md_cl_ke_id [db_nextval  ims_md_classification_keyword_seq]
+			set p_ims_md_cl_ke_id [db_nextval  ims_md_classif_keyword_seq]
 			set p_keyword_l [lindex $keyword 0]
 			set p_keyword_s [lindex $keyword 1]
 			
-			db_dml add_new_keywords {
-			    insert into ims_md_classification_keyword (ims_md_cl_ke_id, ims_md_cl_id, keyword_l, keyword_s)
-			    values
-			    (:p_ims_md_cl_ke_id, :p_ims_md_cl_id, :p_keyword_l, :p_keyword_s)
-			}
+			db_dml add_new_keywords {}
 		    }
 		}
 #	    } on_error {
@@ -1875,11 +1786,7 @@ namespace eval lors::imsmd {
 	lors::imsmd::delMD -acs_object $p_ims_md_id
 
 #	db_transaction {
-            db_dml add_md {
-                insert into ims_md (ims_md_id, schema, schemaversion)
-                values
-                (:p_ims_md_id, :p_schema, :p_schemaversion)
-            }
+            db_dml add_md {}
 #	} on_error {
 #	    ad_return_error "[_ lors.lt_Transaction_Error_in__1] " " [_ lors._The] $errmsg"
 #	}
@@ -1896,13 +1803,11 @@ namespace eval lors::imsmd {
 	set p_ims_md_id $acs_object 
 
 	# if record exists...
-	if {[db_0or1row check_md_record {select ims_md_id from ims_md where ims_md_id = :p_ims_md_id}]} {
+	if {[db_0or1row check_md_record {}]} {
 
 	    # ... then delete it
 #	    db_transaction {
-		db_dml add_md {
-		    delete from ims_md where ims_md_id = :p_ims_md_id
-		}
+		db_dml delete_md {}
 #	    } on_error {
 #		ad_return_error "[_ lors.lt_Transaction_deleting_]" "[_ lors.The_error_was] $errmsg"
 #	    }
@@ -1922,7 +1827,7 @@ namespace eval lors::imsmd {
 	set p_ims_md_id $ims_md_id
 
 	# if record exists... returns 1
-	return [db_0or1row check_md_record {select ims_md_id from ims_md where ims_md_id = :p_ims_md_id}]
+	return [db_0or1row check_md_record {}]
 
     }
 

@@ -35,7 +35,7 @@ ad_proc -public lors::assessment::ims_qti_register_assessment {
     # community
     # FIXME this is a hack until I figure out how to get the
     # package_id of the assessment of the current community
-    ad_conn -set package_id [db_string get_assessment_package_id {select dotlrn_community_applets.package_id from dotlrn_community_applets join apm_packages on (dotlrn_community_applets.package_id=apm_packages.package_id) where community_id = :community_id and package_key='assessment'}]
+    ad_conn -set package_id [db_string get_assessment_package_id {}]
     
     # Read the content of the temporary directory
     foreach file_i [ glob -directory $tmpdirectory *{.xml}  ] {

@@ -26,7 +26,7 @@ aa_register_case lors_manifest {
             # get fs_package_id (where?)
             set fs_package_id ""
             # get package_id
-            set __package_id [db_string get_package "select package_id from apm_packages where package_key='lorsm' limit 1"]
+            set __package_id [db_string get_package {}]
             # get community_id
            
             # create a new manifest
