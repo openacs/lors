@@ -16,12 +16,12 @@ aa_register_case lors_manifest {
     aa_run_with_teardown \
         -rollback \
         -test_code {
-	    if {[set man_id [db_string get_man_id "select man_id from ims_cp_manifests where course_name='__test_course__'" -default ""]] ne ""} {
+	    if {[set man_id [db_string get_man_id {} -default ""]] ne ""} {
 
 		lors::imscp::manifest_delete -man_id $man_id -delete_all t
 		set man_id ""
 	    }
-	    if {[set folder_id [db_string get_folder_id "select folder_id from cr_folders where label='__lors_test__'" -default ""]] ne ""} {
+	    if {[set folder_id [db_string get_folder_id {} -default ""]] ne ""} {
 		content::folder::delete -folder_id $folder_id
 		set folder_id ""
 	    }
@@ -49,9 +49,9 @@ aa_register_case lors_manifest {
             # get fs_package_id (where?)
             set fs_package_id ""
             # get package_id
-            set __package_id [db_string get_package "select package_id from apm_packages where package_key='lorsm' limit 1"]
+            set __package_id [db_string get_package {}]
             # get community_id
-	    set community_id [db_string get_community_id "select community_id from dotlrn_communities_all limit 1"]
+	    set community_id [db_string get_community_id {}]
             # create a new manifest
             set man_id \
 		[lors::imscp::manifest_add \
@@ -120,19 +120,10 @@ aa_register_case lors_manifest {
                                     [list title "__title__"]] \
                     content_item new]
 	    set file_rev_id [content::item::get_latest_revision -item_id $file_id]
-            db_exec_plsql file {
-                select ims_file__new (
-                                      :file_rev_id,
-                                      :res_id,
-                                      '__path_to_filename__',
-                                      '__filename__',
-                                      false --hasmetadata
-                                      )
-            }
+            db_exec_plsql file {}
 
             # create item_to_resource mapping
-            db_dml i_to_r "insert into ims_cp_items_to_resources
-        (ims_item_id,res_id) values (:item_id,:res_id)"
+            db_dml i_to_r {}
 
             # create student_tracking
             
@@ -143,7 +134,7 @@ aa_register_case lors_manifest {
             # try to delete the whole couse
             lors::imscp::manifest_delete -man_id $man_id -delete_all t
         }
-    aa_false "Manifest $man_id deleted" [db_0or1row get_man "select man_id from ims_cp_manifests where man_id=:man_id"]
+    aa_false "Manifest $man_id deleted" [db_0or1row get_man {}]
 }
 
 aa_register_case lors_scorm_1_2 {
@@ -154,10 +145,9 @@ aa_register_case lors_scorm_1_2 {
         -test_code {
 	    set folder_name [ns_mktemp lors_folderXXXXXX]
 	    set folder_id [content::folder::new -name $folder_name]
-#	    set folder_id 458507
 	    aa_log "Created folder $folder_name '${folder_id}'"
-	    aa_log "[db_string q "select parent_id from cr_items where item_id=:folder_id"]"
-	    aa_log "[db_string q "select content_item__get_root_folder(:folder_id)"]"
+	    aa_log "[db_string q {}]" 
+	    aa_log "[db_exec_plsql q2 {}]"
             content::folder::register_content_type \
                 -folder_id $folder_id \
                 -content_type content_revision \
@@ -166,10 +156,7 @@ aa_register_case lors_scorm_1_2 {
                 -folder_id $folder_id \
                 -content_type content_folder \
                 -include_subtypes t	
-	    set format_id [db_string get_format_id \
-			       "select format_id from
-                                lorsm_course_presentation_formats
-                                limit 1" -default ""]
+	    set format_id [db_string get_format_id {} -default ""]
 	    set root_dir [acs_root_dir]/packages/lors/tcl/test/Courses/
 	    set course_id 1
 	    set indp_p 0
@@ -178,7 +165,7 @@ aa_register_case lors_scorm_1_2 {
 				   -package_key file-storage]
 	    aa_log "FS Package ID = '${fs_package_id}'"
 
-	    set community_id [db_string get_community_id "select community_id from dotlrn_communities_all limit 1"]
+	    set community_id [db_string get_community_id {}]
 	    
 	    foreach fname [list LMSTestCourse01 LMSTestCourse02] {
 		set course_name [ns_mktemp lors_courseXXXXXX]
@@ -193,7 +180,7 @@ aa_register_case lors_scorm_1_2 {
 		aa_false "Imported Course $fname" $status
 		aa_log "Results $errmsg"
 	    }
-	    aa_log "Imported [db_list get_contents "select name from cr_items where parent_id=:folder_id"]"
+	    aa_log "Imported [db_list get_contents {}]"
 	}
    
 }
