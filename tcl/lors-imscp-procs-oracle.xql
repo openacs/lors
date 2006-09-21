@@ -3,7 +3,7 @@
 <queryset>
 <rdbms><type>oracle</type><version>8.1.6</version></rdbms>
 
-<fullquery name="lors::imscp::manifest_new.new_manifest">
+<fullquery name="lors::imscp::manifest_add.new_manifest">
 	<querytext>
 	begin
 		:1 := ims_manifest.new (

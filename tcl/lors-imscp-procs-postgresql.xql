@@ -3,7 +3,7 @@
 <queryset>
    <rdbms><type>postgresql</type><version>7.1</version></rdbms>
 
-<fullquery name="lors::imscp::manifest_new.new_manifest">
+<fullquery name="lors::imscp::manifest_add.new_manifest">
       <querytext>
 	select ims_manifest__new (
 		:course_name,
