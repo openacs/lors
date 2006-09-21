@@ -146,7 +146,7 @@ create or replace package ims_organization as
 
 	function new(
 		org_id in ims_cp_organizations.org_id%TYPE,
-		man_id in ims_cp_organizations.org_id%TYPE,
+		man_id in ims_cp_organizations.man_id%TYPE,
 		identifier in ims_cp_organizations.identifier%TYPE,
 		structure in ims_cp_organizations.structure%TYPE,
 		title in ims_cp_organizations.org_title%TYPE,
@@ -176,7 +176,7 @@ show errors;
 create or replace package body ims_organization as
 	function new(
 		org_id in ims_cp_organizations.org_id%TYPE,
-		man_id in ims_cp_organizations.org_id%TYPE,
+		man_id in ims_cp_organizations.man_id%TYPE,
 		identifier in ims_cp_organizations.identifier%TYPE,
 		structure in ims_cp_organizations.structure%TYPE,
 		title in ims_cp_organizations.org_title%TYPE,
@@ -380,7 +380,7 @@ create or replace package ims_resource as
 		res_id in ims_cp_resources.res_id%TYPE
 	) return ims_cp_resources.identifier%TYPE;
 
-end ims_resource;1
+end ims_resource;
 /
 show errors;
 
