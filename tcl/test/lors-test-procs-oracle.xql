@@ -28,7 +28,7 @@
 			filename => '__filename__',
 			hasmetadata => 'f'
 		);
-	end:
+	end;
 	</querytext>
 </fullquery>
 
@@ -45,7 +45,7 @@
 <fullquery name="_lors__lors_scorm_1_2.get_format_id">      
 	<querytext>
 	select format_id 
-	from lorsm_course_presentation_formats 
+	from lorsm_course_presentation_fmts 
 	where rownum = 1
 	</querytext>
 </fullquery>
