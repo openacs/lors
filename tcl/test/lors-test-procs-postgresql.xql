@@ -40,7 +40,7 @@
 <fullquery name="_lors__lors_scorm_1_2.get_format_id">      
 	<querytext>
 	select format_id 
-	from lorsm_course_presentation_formats limit 1
+	from lorsm_course_presentation_fmts limit 1
 	</querytext>
 </fullquery>
 
