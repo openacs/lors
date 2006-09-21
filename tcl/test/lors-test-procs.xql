@@ -22,7 +22,7 @@
       <querytext>
 	insert into ims_cp_items_to_resources (ims_item_id,res_id) 
 	values 
-	(:item_id,:res_id)"
+	(:item_id,:res_id)
       </querytext>
 </fullquery>
 
