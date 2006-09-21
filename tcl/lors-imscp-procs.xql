@@ -20,7 +20,7 @@
 
 <fullquery name="lors::imscp::manifest_delete.get_items">
 	<querytext>
-o	select cr.item_id 
+	select cr.item_id 
 	from cr_revisions cr, ims_cp_items i, ims_cp_items_to_resources ir, ims_cp_resources r 
 	where r.man_id=:man_id
 	and r.res_id=ir.res_id
