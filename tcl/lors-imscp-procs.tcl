@@ -309,7 +309,7 @@ ad_proc -public lors::imscp::manifest_delete {
 
             # remove ims_cp_items
             foreach item_id [db_list get_items {} ] {
-		db_dml delete_map {}
+#		db_dml delete_map {}
 #		ad_return_complaint 1 "item_id $item_id ims_item_id $ims_item_id"
 		content::item::delete -item_id $item_id
             }
@@ -329,7 +329,7 @@ ad_proc -public lors::imscp::manifest_delete {
 
             # remove ims_cp_organization
             foreach org_item_id [db_list get_org {} ] {
-		db_dml delete_map_org_item_id {}
+		#db_dml delete_map_org_item_id {}
 		content::item::delete -item_id $org_item_id
             }
 
