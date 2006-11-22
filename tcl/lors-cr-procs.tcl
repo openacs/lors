@@ -163,16 +163,12 @@ ad_proc -public lors::cr::add_files {
 	    set version_id [content::revision::new -title $title -description $description -mime_type $mime_type \
 				-creation_user $user_id -creation_ip $creation_ip -item_id $file_id -is_live "t"]
 
-	    # move the actual file into the CR
-	    set cr_file [cr_create_content_file $file_id $version_id $fle]
-	    # get the size
-	    set file_size [cr_file_size $cr_file]
-		
-	    # update the file path in the CR and the size on cr_revisions
-	db_dml update_revi {}
 
+		set cr_file [cr_create_content_file $file_id $version_id $fle]
+		# get the size
+		set file_size [cr_file_size $cr_file]
+                db_dml set_file_content ""
 #    }
-
         lappend retlist [list $fle $mime_type $parent_id $file_id $version_id $cr_file $file_size]
     }
     return $retlist

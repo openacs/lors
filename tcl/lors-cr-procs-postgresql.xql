@@ -14,4 +14,10 @@
 	</querytext>
 </fullquery>
 
+<fullquery name="lors::cr::add_files.set_file_content">      
+	<querytext>
+	update cr_revisions set content = '$cr_file', content_length = $file_size where revision_id = $version_id
+	</querytext>
+</fullquery>
+
 </queryset>
