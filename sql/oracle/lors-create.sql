@@ -24,15 +24,15 @@
 create or replace package lors as
  
 	function new_folder (
-			name		cr_items.name%TYPE,
-			folder_name	cr_folders.label%TYPE,
-			parent_id	cr_items.parent_id%TYPE,
-			creation_user	acs_objects.creation_user%TYPE,
-			creation_ip	acs_objects.creation_ip%TYPE
+			p_name		cr_items.name%TYPE,
+			p_folder_name	cr_folders.label%TYPE,
+			p_parent_id	cr_items.parent_id%TYPE,
+			p_creation_user	acs_objects.creation_user%TYPE,
+			p_creation_ip	acs_objects.creation_ip%TYPE
 	) return cr_folders.folder_id%TYPE;
 	
 	procedure delete_folder(
-			folder_id cr_folders.folder_id%TYPE
+			p_folder_id cr_folders.folder_id%TYPE
 	);
 	
 END lors;
@@ -40,21 +40,21 @@ END lors;
 create or replace package body lors as
 
 	function new_folder (
-			name			cr_items.name%TYPE,
-        		folder_name		cr_folders.label%TYPE,
-			parent_id		cr_items.parent_id%TYPE,
-			creation_user		acs_objects.creation_user%TYPE,
-			creation_ip		acs_objects.creation_ip%TYPE
+			p_name			cr_items.name%TYPE,
+	        	p_folder_name		cr_folders.label%TYPE,
+			p_parent_id		cr_items.parent_id%TYPE,
+			p_creation_user		acs_objects.creation_user%TYPE,
+			p_creation_ip		acs_objects.creation_ip%TYPE
 	) return cr_folders.folder_id%TYPE is
 	   v_folder_id	cr_folders.folder_id%TYPE;
 	begin
         -- Create a new folder
         	v_folder_id := content_folder.new (
-				name => name,
-				label => folder_name,
-				parent_id => parent_id,
-				creation_user => creation_user,
-				creation_ip => creation_ip
+				name => p_name,
+				label => p_folder_name,
+				parent_id => p_parent_id,
+				creation_user => p_creation_user,
+				creation_ip => p_creation_ip
 				);
 
         -- register the standard content types
@@ -87,7 +87,7 @@ create or replace package body lors as
         -- Give the creator admin privileges on the folder
 	        acs_permission.grant_permission (
 				object_id => v_folder_id,
-				grantee_id => creation_user,
+				grantee_id => p_creation_user,
 				privilege => 'admin'
 				);
 
@@ -97,11 +97,11 @@ create or replace package body lors as
 
 	-- Deletes folder
 	procedure delete_folder(
-		folder_id	cr_folders.folder_id%TYPE
+		p_folder_id	cr_folders.folder_id%TYPE
 	) is
 	begin
 	        content_folder.del(
-			folder_id => folder_id
+			folder_id => p_folder_id
 			);
 
 	end delete_folder;
