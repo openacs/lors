@@ -179,6 +179,14 @@
 	</querytext>
 </fullquery>
 
+<fullquery name="lors::imsmd::addMDSchemaVersion.add_md">
+	<querytext>
+      insert into ims_md (ims_md_id, schema, schemaversion)
+      values
+      (:p_ims_md_id, :p_schema, :p_schemaversion)
+	</querytext>
+</fullquery>
+
 <fullquery name="lors::imsmd::delMD.check_md_record">
 	<querytext>
 	select ims_md_id 

@@ -7,24 +7,24 @@
 	<querytext>
 	begin
 		:1 := ims_manifest.new (
-			course_name => 	:course_name,
-			identifier => :identifier,
-			version => :version,
-			orgs_default => :orgs_default,
-			hasmetadata => :hasmetadata,
-			parent_man_id => :parent_man_id,
-			isscorm => :isscorm,
-			folder_id => :content_folder_id,
-			fs_package_id => :fs_package_id,
-			creation_date => sysdate,
-			creation_user => :user_id,
-			creation_ip => :creation_ip,
-			package_id => :package_id,
-			community_id => :community_id,
-			class_key => :class_key,
-			revision_id => :revision_id,
-			isshared => :isshared,
-			course_presentation_format => :course_presentation_format
+			p_course_name => :course_name,
+			p_identifier => :identifier,
+			p_version => :version,
+			p_orgs_default => :orgs_default,
+			p_hasmetadata => :hasmetadata,
+			p_parent_man_id => :parent_man_id,
+			p_isscorm => :isscorm,
+			p_folder_id => :content_folder_id,
+			p_fs_package_id => :fs_package_id,
+			p_creation_date => sysdate,
+			p_creation_user => :user_id,
+			p_creation_ip => :creation_ip,
+			p_package_id => :package_id,
+			p_community_id => :community_id,
+			p_class_key => :class_key,
+			p_revision_id => :revision_id,
+			p_isshared => :isshared,
+			p_course_presentation_fmt => :course_presentation_format
 		);
 	end;
 	</querytext>
@@ -34,17 +34,17 @@
 	<querytext>
 	begin
 		:1 := ims_organization.new (
-			org_id => :org_id,
-			man_id => :man_id,
-			identifier => :identifier,
-			structure => :structure,
-			title => :title,
-			hasmetadata => :hasmetadata,
-			creation_date => sysdate,
-			creation_user => :user_id,
-			creation_ip => :creation_ip,
-			package_id => :package_id,
-			revision_id => :revision_id
+			p_org_id => :org_id,
+			p_man_id => :man_id,
+			p_identifier => :identifier,
+			p_structure => :structure,
+			p_title => :title,
+			p_hasmetadata => :hasmetadata,
+			p_creation_date => sysdate,
+			p_creation_user => :user_id,
+			p_creation_ip => :creation_ip,
+			p_package_id => :package_id,
+			p_revision_id => :revision_id
 		);
 	end;
 	</querytext>
@@ -54,7 +54,7 @@
 	<querytext>
 	begin
 		:1 := ims_organization.delete (
-			org_id => :org_id
+			p_org_id => :org_id
 		);		
 	end;
 	</querytext>
@@ -64,27 +64,27 @@
 	<querytext>
 	begin
 		:1 := ims_item.new (
-			ims_item_id => :item_id,
-			org_id => :org_id,
-			identifier => :identifier,
-			identifierref => :identifierref,
-			isvisible => :isvisible,
-			parameters => :parameters,
-			item_title => :title,
-			parent_item => :parent_item,
-			hasmetadata => :hasmetadata,
-			prerequisites_t => :prerequisites_t,
-			prerequisites_s => :prerequisites_s,
-			type => :type,
-			maxtimeallowed => :maxtimeallowed,
-			timelimitaction => :timelimitaction,
-			datafromlms => :datafromlms,
-			masteryscore => :masteryscore,
-			creation_date => sysdate,
-			creation_user => :user_id,
-			creation_ip => :creation_ip,
-			package_id => :package_id,
-			revision_id => :revision_id
+			p_ims_item_id => :item_id,
+			p_org_id => :org_id,
+			p_identifier => :identifier,
+			p_identifierref => :identifierref,
+			p_isvisible => :isvisible,
+			p_parameters => :parameters,
+			p_item_title => :title,
+			p_parent_item => :parent_item,
+			p_hasmetadata => :hasmetadata,
+			p_prerequisites_t => :prerequisites_t,
+			p_prerequisites_s => :prerequisites_s,
+			p_type => :type,
+			p_maxtimeallowed => :maxtimeallowed,
+			p_timelimitaction => :timelimitaction,
+			p_datafromlms => :datafromlms,
+			p_masteryscore => :masteryscore,
+			p_creation_date => sysdate,
+			p_creation_user => :user_id,
+			p_creation_ip => :creation_ip,
+			p_package_id => :package_id,
+			p_revision_id => :revision_id
 		);
 	end;
 	</querytext>
@@ -94,7 +94,7 @@
 	<querytext>
 	begin
 		:1 := function delete (
-			ims_item_id => :item_id
+			p_ims_item_id => :item_id
 		);
 	end;
 	</querytext>
@@ -104,18 +104,18 @@
 	<querytext>
 	begin
 		:1 := ims_resource.new (
-			res_id => :res_id,
-			man_id => :man_id,
-			identifier => :identifier,
-			type => :type,
-			href => :href,
-			scorm_type => :scorm_type,
-			hasmetadata => :hasmetadata,
-			creation_date => sysdate,
-			creation_user =>:user_id,  
-			creation_ip => :creation_ip,
-			package_id => :package_id,
-			revision_id => :revision_id 
+			p_res_id => :res_id,
+			p_man_id => :man_id,
+			p_identifier => :identifier,
+			p_type => :type,
+			p_href => :href,
+			p_scorm_type => :scorm_type,
+			p_hasmetadata => :hasmetadata,
+			p_creation_date => sysdate,
+			p_creation_user =>:user_id,  
+			p_creation_ip => :creation_ip,
+			p_package_id => :package_id,
+			p_revision_id => :revision_id 
 		);
 	end;
 	</querytext>
@@ -125,7 +125,7 @@
 	<querytext>
 	begin
 		:1 := ims_resource.delete (
-			res_id => :res_id
+			p_res_id => :res_id
 		);
 	end;	
 	</querytext>
@@ -135,8 +135,8 @@
 	<querytext>
 	begin
 		:1 := ims_cp_item_to_resource.new (
-			ims_item_id => :item_id,
-			res_id => :res_id
+			p_ims_item_id => :item_id,
+			p_res_id => :res_id
 		);
 	end;
 	</querytext>
@@ -146,9 +146,9 @@
 	<querytext>
 	begin
 		:1 := ims_dependency.new (
-			dep_id => :dep_id,
-			res_id => :res_id,
-			identifierref => :identifierref
+			p_dep_id => :dep_id,
+			p_res_id => :res_id,
+			p_identifierref => :identifierref
 		);
 	end;
 	</querytext>
@@ -158,7 +158,7 @@
 	<querytext>
 	begin
 		:1 := ims_dependency.delete (
-			dep_id => :dep_id
+			p_dep_id => :dep_id
 		);
 	end;
 	</querytext>
@@ -167,12 +167,12 @@
 <fullquery name="lors::imscp::file_add.file_add">
 	<querytext>
 	begin
-		:1 := ims_file.add (
-			file_id => :file_id,
-			res_id => :res_id,
-			pathtofile => :pathtofile,
-			filename => :filename,
-			hasmetadata => :hasmetadata
+		:1 := ims_file.new (
+			p_file_id => :file_id,
+			p_res_id => :res_id,
+			p_pathtofile => :pathtofile,
+			p_filename => :filename,
+			p_hasmetadata => :hasmetadata
 		);
 	end;
 	</querytext>

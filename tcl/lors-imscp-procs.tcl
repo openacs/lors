@@ -230,7 +230,7 @@ ad_proc -public lors::imscp::manifest_add {
         set parent_man_id 0
     }
     if {[empty_string_p $isscorm]} {
-        set isscorm 0
+        set isscorm "f"
     }
     if {[empty_string_p $content_folder_id]} {
         set content_folder_id $folder_id
@@ -260,7 +260,7 @@ ad_proc -public lors::imscp::manifest_add {
         permission::grant -party_id $user_id -object_id $item_id -privilege admin
         
         # The new course has for default its isshared value false
-        set isshared f
+        set isshared "f"
 
     } else {
         set item_id $version_id
@@ -274,6 +274,25 @@ ad_proc -public lors::imscp::manifest_add {
     # additional information as before
 
 #    db_transaction {
+   #Convert oracle boolean type. This is compatible with postgreSQL
+   if { $hasmetadata == 0 } {
+       set hasmetadata "f"
+   } elseif {$hasmetadata == 1 } {
+       set hasmetadata "t"
+   }
+
+   if { $isscorm == 0 } {
+       set isscorm "f"
+   } elseif {$isscorm == 1 } {
+       set isscorm "t"
+   }
+
+   if { $isshared == 0 } {
+       set isshared "f"
+   } elseif {$isshared == 1 } {
+       set isshared "t"
+   }
+
    set manifest_id [db_exec_plsql new_manifest {} ]
 
 #    }
@@ -399,6 +418,11 @@ ad_proc -public lors::imscp::organization_add {
 			 -creation_ip $creation_ip -item_id $item_id -is_live "t"] 
 
 #    db_transaction {
+   if { $hasmetadata == 0 } {
+       set hasmetadata "f"
+   } elseif {$hasmetadata == 1 } {
+       set hasmetadata "t"
+   }
         set organization_id [db_exec_plsql new_organization {} ]
 
 #    }
@@ -507,6 +531,12 @@ ad_proc -public lors::imscp::item_add {
 			 -creation_ip $creation_ip -item_id $cr_item_id -is_live "t"] 
 
 #    db_transaction {
+   #Convert oracle boolean type. This is compatible with postgreSQL
+   if { $hasmetadata == 0 } {
+       set hasmetadata "f"
+   } elseif {$hasmetadata == 1 } {
+       set hasmetadata "t"
+   }
         set item_id [db_exec_plsql new_item {} ]
 
 #    }
@@ -602,6 +632,7 @@ ad_proc -public lors::imscp::addItems {
         set p_datafromlms [lindex $item 10]
         set p_masteryscore [lindex $item 11]
 	set p_dotlrn_permission [lindex $item 12]
+
 
         if {$p_hasmetadata != 0} {
             set md_node $p_hasmetadata
@@ -701,6 +732,12 @@ ad_proc -public lors::imscp::resource_add {
 			 -creation_ip $creation_ip -item_id $item_id -is_live "t"] 
 
 #    db_transaction {
+   #Convert oracle boolean type. This is compatible with postgreSQL
+   if { $hasmetadata == 0 } {
+       set hasmetadata "f"
+   } elseif {$hasmetadata == 1 } {
+       set hasmetadata "t"
+   }
         set resource_id [db_exec_plsql new_resource {} ]
 
 #    }
@@ -789,7 +826,7 @@ ad_proc -public lors::imscp::file_add {
     @author Ernie Ghiglione (ErnieG@mm.st)
 } {
    if {[empty_string_p $hasmetadata]} {
-        set hasmetadata 0
+        set hasmetadata "f"
     }
 
     # At times, and for some strange reason, Blackboard and Reload
@@ -802,7 +839,14 @@ ad_proc -public lors::imscp::file_add {
     ns_log notice "DAVEB99 file_add file_id='${file_id}'"
     if {$file_exists == 0} {
 #	db_transaction {
-	    set file [db_exec_plsql file_add {} ]
+	#Convert oracle boolean type. This is compatible with postgreSQL
+	if { $hasmetadata == 0 } {
+	    set hasmetadata "f"
+	} elseif {$hasmetadata == 1 } {
+	    set hasmetadata "t"
+	}
+	
+	set file [db_exec_plsql file_add {} ]
 #	}
     }
     return $file_id
