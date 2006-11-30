@@ -35,6 +35,7 @@ ad_proc -public lors::object_url {
     if {$object_type eq "content_item"} {
         set object_type [content::item::content_type -item_id $object_id]
     }
+    ns_log notice "lors::object_Url object_id='${object_id}'"
     switch $url {
         admin {
             
@@ -49,9 +50,9 @@ ad_proc -public lors::object_url {
                                 {assessment_id}]
                 }
                 "::xowiki::Page" {
-                    return [export_vars \
-                                -base /wiki/edit \
-                                {{item_id $object_id}}]
+	            set page [::xowiki::Package instantiate_page_from_id -item_id $object_id]
+		    return [$page make_link -privilege public -url [$page name] $page edit ""]
+
                 }
             }
                 
