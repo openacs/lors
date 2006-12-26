@@ -22,11 +22,11 @@
 	<querytext>
 	begin
 		:1 := ims_file.new (
-			file_id => :file_rev_id,
-			res_id => :res_id,
-			pathtofile => '__path_to_filename__',
-			filename => '__filename__',
-			hasmetadata => 'f'
+			p_file_id => :file_rev_id,
+			p_res_id => :res_id,
+			p_pathtofile => '__path_to_filename__',
+			p_filename => '__filename__',
+			p_hasmetadata => 'f'
 		);
 	end;
 	</querytext>
