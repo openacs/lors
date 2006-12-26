@@ -96,10 +96,10 @@ aa_register_case lors_manifest {
 		-org_id $org_id \
 		-identifier "__identifier__" \
 		-identifierref "__identifier_href__" \
-		-isvisible true \
+		-isvisible t \
 		-parameters "__parameters__" \
 		-title "__title__" \
-		-hasmetadata false \
+		-hasmetadata f \
 		-prerequisites_t "__prereq_t__" \
 		-prerequisites_s "__prereq_s__" \
 		-type "__type__" \
@@ -175,8 +175,9 @@ aa_register_case lors_scorm_1_2 {
 
 		aa_true "Course ${fname} exists in filesystem" [file exists $tmp_dir]
 		set vars [list folder_id $folder_id format_id $format_id tmp_dir $tmp_dir course_id $course_id course_name $course_name indb_p 0 fs_package_id $fs_package_id __test 1 community_id $community_id]
-		set status [catch {template::adp_include /packages/lorsm/lib/course-add-3 $vars} errmsg]
-#		template::adp_include /packages/lorsm/lib/course-add-3 $vars
+		set status [catch {template::adp_include /packages/lorsm/www/course-add-3 $vars} errmsg]
+#		template::adp_include /packages/lorsm/www/course-add-3 $vars
+
 		aa_false "Imported Course $fname" $status
 		aa_log "Results $errmsg"
 	    }
