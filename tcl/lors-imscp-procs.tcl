@@ -174,6 +174,25 @@ ad_proc -public lors::imscp::countItems {
 
 }
 
+#Funcion convert PG to ORACLE boolean type
+ad_proc -private lors::imscp::convert_boolean_type { 
+    {varname}
+} {
+    Convert Postgres boolean type to compatible format with Oracle. 
+    Return t or f
+    @author Mario Aguado
+    @creation-date 2006-12-27
+} {
+
+    set valid_true [list TRUE t true y yes 1]
+    if { [lsearch $valid_true $varname] != -1 } {
+	return t
+    } else {
+	return f
+    }
+}
+
+
 
  # IMS CP database transaction functions
 ad_proc -public lors::imscp::manifest_add {
@@ -275,23 +294,9 @@ ad_proc -public lors::imscp::manifest_add {
 
 #    db_transaction {
    #Convert oracle boolean type. This is compatible with postgreSQL
-   if { $hasmetadata == 0 } {
-       set hasmetadata "f"
-   } elseif {$hasmetadata == 1 } {
-       set hasmetadata "t"
-   }
-
-   if { $isscorm == 0 } {
-       set isscorm "f"
-   } elseif {$isscorm == 1 } {
-       set isscorm "t"
-   }
-
-   if { $isshared == 0 } {
-       set isshared "f"
-   } elseif {$isshared == 1 } {
-       set isshared "t"
-   }
+   set hasmetadata [lors::imscp::convert_boolean_type $hasmetadata]
+   set isscorm [lors::imscp::convert_boolean_type $isscorm]
+   set isshared [lors::imscp::convert_boolean_type $isshared]
 
    set manifest_id [db_exec_plsql new_manifest {} ]
 
@@ -418,11 +423,8 @@ ad_proc -public lors::imscp::organization_add {
 			 -creation_ip $creation_ip -item_id $item_id -is_live "t"] 
 
 #    db_transaction {
-   if { $hasmetadata == 0 } {
-       set hasmetadata "f"
-   } elseif {$hasmetadata == 1 } {
-       set hasmetadata "t"
-   }
+   set hasmetadata [lors::imscp::convert_boolean_type $hasmetadata]
+
         set organization_id [db_exec_plsql new_organization {} ]
 
 #    }
@@ -532,11 +534,10 @@ ad_proc -public lors::imscp::item_add {
 
 #    db_transaction {
    #Convert oracle boolean type. This is compatible with postgreSQL
-   if { $hasmetadata == 0 } {
-       set hasmetadata "f"
-   } elseif {$hasmetadata == 1 } {
-       set hasmetadata "t"
-   }
+   set isvisible [lors::imscp::convert_boolean_type $isvisible]
+   set hasmetadata [lors::imscp::convert_boolean_type $hasmetadata]
+
+
         set item_id [db_exec_plsql new_item {} ]
 
 #    }
