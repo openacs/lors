@@ -104,7 +104,6 @@ template::multirow foreach organizations {
     template::util::list_of_lists_to_array $indent_list indent_array
     ns_log notice "BEFORE MULTIROW [template::multirow size blah]"
     db_multirow blah blah "" {
-	ns_log notice "Hi There"
 
 	set indent [string repeat "&nbsp;&nbsp;" [expr {$indent_array($item_id)-1}]]
             if {$type eq "webcontent" && ![string equal $identifierref {}]} {
