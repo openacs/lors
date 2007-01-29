@@ -109,7 +109,7 @@ template::multirow foreach organizations {
             if {$type eq "webcontent" && ![string equal $identifierref {}]} {
 		set href "[apm_package_url_from_id_mem $fs_package_id]view/[db_string select_folder_key {select key from fs_folders where folder_id = :folder_id}]/[lorsm::fix_url -url $identifierref]"
 	    } else {
-		set href "[lors::object_url -url admin -object_id $res_identifier]" 
+		set href "[lors::object_url -url admin -object_id $man_id]" 
 	    }
 	set type [string map $pretty_types_map $type]
 	set delete [export_vars -base object-delete {item_id return_url}]
