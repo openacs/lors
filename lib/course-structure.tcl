@@ -93,7 +93,13 @@ append orgs_list "<tr class=\"list-header\">
     </tr>
 "
 
-set pretty_types_map {as_sections Questions ::xowiki::Page Content}
+set pretty_types_map {}
+if { [apm_package_installed_p assessment] } {
+	append pretty_types_map "as_sections Questions"
+}
+if { [apm_package_installed_p xowiki] } {
+	append pretty_types_map "::xowiki::Page Content"
+}
 template::multirow create blah course_name delete down folder_id fs_package_id hasmetadata href identifierref indent isshared item_id item_title object_id org_id res_identifier type up
 db_multirow organizations organizations { } { }
 template::multirow foreach organizations {
@@ -132,7 +138,13 @@ set tracker_url [export_vars -base tracker {man_id}]
 set sharer_url  [export_vars -base sharer {man_id folder_id return_url}]
 set formater_url  [export_vars -base formater {man_id return_url}]
 
-set add_type_options [list [list Questions assessment] [list  Content wiki]]
+set add_type_options [list]
+if { [apm_package_installed_p assessment] } {
+	lappend add_type_options [list Questions assessment]
+}
+if { [apm_package_installed_p xowiki] } {
+	lappend add_type_options [list  Content wiki]
+}
 ad_form -name add-new -action object-new -export {man_id} -form {
     {add_type:text(select) {label ""} {options $add_type_options}}
     {add_new:text(submit) {label {[_ acs-kernel.common_Add]}}}    
