@@ -2,6 +2,7 @@
 <message_catalog package_key="lors" package_version="0.6d4" locale="en_US" charset="ISO-8859-1">
 
   <msg key="_The"> The error was:</msg>
+  <msg key="Down">Down</msg>
   <msg key="lt_dont_know_how_to_extr">dont know how to extract</msg>
   <msg key="lt_Error_inserting_folde">Error inserting folder</msg>
   <msg key="lt_this_thing_is_open_no">this thing is open now</msg>
@@ -11,4 +12,5 @@
   <msg key="lt_Transaction_Error_whi">Transaction Error while Adding Metadata</msg>
   <msg key="The_error_was">The error was:</msg>
   <msg key="The_error_was_errmsg">The error was: $errmsg</msg>
+  <msg key="Up">Up</msg>
 </message_catalog>
