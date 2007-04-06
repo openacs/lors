@@ -10,6 +10,8 @@ ad_page_contract {
     @cvs-id  $Id$
 
     @param man_id manifest id of course
+    @param exclude list of cr_items.item_ids of ims_cp_items to exclude from
+                   the display (optional)
 }
 set package_id [ad_conn package_id]
 set community_id [dotlrn_community::get_community_id]
@@ -96,16 +98,26 @@ append orgs_list "<tr class=\"list-header\">
 set pretty_types_map {as_sections Questions ::xowiki::Page Content}
 template::multirow create blah course_name delete down folder_id fs_package_id hasmetadata href identifierref indent isshared item_id item_title object_id org_id res_identifier type up
 db_multirow organizations organizations { } { }
-template::multirow foreach organizations {
 
-    set total_items [db_string items_count {select count(*) from ims_cp_items where org_id=:org_id} -default 0]
+if {[info exists exclude] && [llength $exclude]} {
+    set exclude_where " and i.ims_item_id not in ([template::util::tcl_to_sql_list $exclude]) "
+} else {
+    set exclude_where ""
+    set exclude {}
+}
+
+template::multirow foreach organizations {
+   
+    set total_items [db_string items_count "select count(*) from ims_cp_items i where org_id=:org_id $exclude_where" -default 0]
     # We get the indent of the items in this org_id
-    set indent_list [lorsm::get_items_indent -org_id $org_id]
+    set indent_list [lorsm::get_items_indent -org_id $org_id -exclude $exclude]
     template::util::list_of_lists_to_array $indent_list indent_array
     ns_log notice "BEFORE MULTIROW [template::multirow size blah]"
+    
     db_multirow blah blah "" {
-
-	set indent [string repeat "&nbsp;&nbsp;" [expr {$indent_array($item_id)-1}]]
+	if {[info exists indent_array($item_id)]} {
+	    set indent [string repeat "&nbsp;&nbsp;" [expr {$indent_array($item_id)-1}]]
+	} else { set indent 1 }
             if {$type eq "webcontent" && ![string equal $identifierref {}]} {
 		set href "[apm_package_url_from_id_mem $fs_package_id]view/[db_string select_folder_key {select key from fs_folders where folder_id = :folder_id}]/[lorsm::fix_url -url $identifierref]"
 	    } else {
@@ -132,7 +144,7 @@ set tracker_url [export_vars -base tracker {man_id}]
 set sharer_url  [export_vars -base sharer {man_id folder_id return_url}]
 set formater_url  [export_vars -base formater {man_id return_url}]
 
-set add_type_options [list [list Questions assessment] [list  Content wiki]]
+set add_type_options [list [list Questions assessment] [list  "Site Content" wiki] [list "Course Content" webcontent]]
 ad_form -name add-new -action object-new -export {man_id} -form {
     {add_type:text(select) {label ""} {options $add_type_options}}
     {add_new:text(submit) {label {[_ acs-kernel.common_Add]}}}    

@@ -166,6 +166,7 @@
                                )
            AND
                 m.man_id = :man_id
+	$exclude_where
         ORDER BY 
                  i.sort_order,o.tree_sortkey,o.object_id
 

@@ -31,7 +31,10 @@ switch $add_type {
                     lappend options [list $title $item_id]
                 }
     }
-    
+    webcontent {
+	ad_returnredirect [export_vars -base item-add-edit {man_id}]
+	ad_script_abort
+    }
 }
 
 set search_p 0
@@ -85,12 +88,14 @@ ad_form -name choose -export {man_id add_type} -form {
 			-res_id $res_id
 
 		}
+
 		# FIXME see if anyone is using this resource
 		# already. objects should be # able to be resources
 		# without being tied to one manifest, # since you can use
 		# a resource in more than one course and # it doesn't make
 		# sense to have a seperate row every time # we reuse an
-		# object
+		# object DAVEB 2070321 - of course, it adds complexity and
+		# special handling, and this works for now.
                     
 	    }
         }

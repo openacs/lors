@@ -147,6 +147,10 @@
           </tr>
 </table>
 </div>
+<if @extra_admin_html@ not nil>
+	@extra_admin_html;noquote@
+</if>
+
 <table class="list" cellpadding="3" cellspacing="1" width="70%">
     <tr class="list-header">
         <th class="list" valign="top" style="background-color: #e0e0e0; font-weight: bold;" colspan="2">
@@ -166,8 +170,6 @@
               </td>
           </tr>
 </table>
-
-
 
 
 <listtemplate name="blah"></listtemplate>
