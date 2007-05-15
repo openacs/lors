@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<message_catalog package_key="lors" package_version="0.6d4" locale="pt_BR" charset="ISO-8859-1">
+
+  <msg key="_The">O erro foi:</msg>
+  <msg key="lt_dont_know_how_to_extr">não sabe como extrair</msg>
+  <msg key="lt_Error_inserting_folde">Erro ao inserir pasta</msg>
+  <msg key="lt_this_thing_is_open_no">agora está aberto</msg>
+  <msg key="lt_Transaction_deleting_">Gravação da transação apagando MD</msg>
+  <msg key="lt_Transaction_Error_in_">Erro na Transação em LOM</msg>
+  <msg key="lt_Transaction_Error_in__1">Erro na Transação em MD schema shemaversion</msg>
+  <msg key="lt_Transaction_Error_whi">Erro na Transação ao Adicionar Metadados</msg>
+  <msg key="The_error_was">O erro foi:</msg>
+  <msg key="The_error_was_errmsg">O erro foi: $errmsg</msg>
+</message_catalog>

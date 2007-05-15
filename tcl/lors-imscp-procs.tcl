@@ -590,6 +590,8 @@ ad_proc -public lors::imscp::item_add {
         }
                         ]
 
+   set next_sort_order [db_string get_max "select coalesce(max(sort_order)+1,1) from ims_cp_items where org_id=:org_id"]
+   db_dml set_sort_order "update ims_cp_items set sort_order = :next_sort_order where ims_item_id = :item_id"
 #    }
 
     if {![empty_string_p $dotlrn_permission]} {

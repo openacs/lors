@@ -95,7 +95,13 @@ append orgs_list "<tr class=\"list-header\">
     </tr>
 "
 
-set pretty_types_map {as_sections Questions ::xowiki::Page Content}
+set pretty_types_map {}
+if { [apm_package_installed_p assessment] } {
+	append pretty_types_map "as_sections Questions"
+}
+if { [apm_package_installed_p xowiki] } {
+	append pretty_types_map "::xowiki::Page Content"
+}
 template::multirow create blah course_name delete down folder_id fs_package_id hasmetadata href identifierref indent isshared item_id item_title object_id org_id res_identifier type up
 db_multirow organizations organizations { } { }
 
@@ -121,7 +127,7 @@ template::multirow foreach organizations {
             if {$type eq "webcontent" && ![string equal $identifierref {}]} {
 		set href "[apm_package_url_from_id_mem $fs_package_id]view/[db_string select_folder_key {select key from fs_folders where folder_id = :folder_id}]/[lorsm::fix_url -url $identifierref]"
 	    } else {
-		set href "[lors::object_url -url admin -object_id $res_identifier]" 
+		set href "[lors::object_url -url admin -object_id $man_id]" 
 	    }
 	set type [string map $pretty_types_map $type]
 	set delete [export_vars -base object-delete {item_id return_url}]
@@ -144,7 +150,13 @@ set tracker_url [export_vars -base tracker {man_id}]
 set sharer_url  [export_vars -base sharer {man_id folder_id return_url}]
 set formater_url  [export_vars -base formater {man_id return_url}]
 
-set add_type_options [list [list Questions assessment] [list  "Site Content" wiki] [list "Course Content" webcontent]]
+set add_type_options [list]
+if { [apm_package_installed_p assessment] } {
+	lappend add_type_options [list Questions assessment]
+}
+if { [apm_package_installed_p xowiki] } {
+	lappend add_type_options [list  Content wiki]
+}
 ad_form -name add-new -action object-new -export {man_id} -form {
     {add_type:text(select) {label ""} {options $add_type_options}}
     {add_new:text(submit) {label {[_ acs-kernel.common_Add]}}}    
