@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<message_catalog package_key="lors" package_version="0.6d4" locale="el_GR" charset="utf-8">
+
+  <msg key="_The">Το σφάλμα ήταν:</msg>
+  <msg key="lt_dont_know_how_to_extr">δεν γνωρίζω πως θα γίνει η αποσυμπίεση</msg>
+  <msg key="lt_Error_inserting_folde">Σφάλμα εισαγωγής φακέλου</msg>
+  <msg key="lt_this_thing_is_open_no">αυτό το αντικείμενο είναι ανοιχτό τώρα</msg>
+  <msg key="lt_Transaction_deleting_">Η συναλλαγή διαγράφει την καταχώρηση MD </msg>
+  <msg key="lt_Transaction_Error_in_">Σφάλμα συναλλαγής στο LOM</msg>
+  <msg key="lt_Transaction_Error_in__1">Σφάλμα συναλλαγής στο MD schema shemaversion</msg>
+  <msg key="lt_Transaction_Error_whi">Σφάλμα συναλλαγής κατά την προσθήκη Metadata</msg>
+  <msg key="The_error_was">Το σφάλμα ήταν:</msg>
+  <msg key="The_error_was_errmsg">Το σφάλμα ήταν:$errmsg </msg>
+</message_catalog>
