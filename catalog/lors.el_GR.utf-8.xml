@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<message_catalog package_key="lors" package_version="0.6d4" locale="el_GR" charset="utf-8">
+<message_catalog package_key="lors" locale="el_GR" charset="utf-8">
 
   <msg key="_The">Το σφάλμα ήταν:</msg>
   <msg key="lt_dont_know_how_to_extr">δεν γνωρίζω πως θα γίνει η αποσυμπίεση</msg>
