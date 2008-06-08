@@ -16,7 +16,7 @@
         <license_url>http://www.gnu.org/copyleft/gpl.html</license_url>
         <maturity>1</maturity>
         <provides url="lors" version="0.6d4"/>
-        <requires url="dotlrn" version="2.4.0a1"/>
+        <requires url="dotlrn" version="2.4.0b1"/>
         <requires url="file-storage" version="5.3.0d1"/>
 
         <callbacks>
