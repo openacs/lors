@@ -103,7 +103,7 @@
   </querytext>
 </fullquery>
 
-<fullquery name="blah">
+<fullquery name="get_items">
   <querytext>
         SELECT
 		'' as delete,
