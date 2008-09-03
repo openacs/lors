@@ -4,6 +4,7 @@ ad_page_contract {
     @param package_id (optional) optional package to create the course under, probably lorsm or lors-central
     @param folder_id root folder to store stuff in
     @param return_url (defaults to ad_return_url)
+    @param return_url_base (if you want to redirect to return_url_base?man_id={man_id} use this
 }
 
 # ad_form requires man_id NOT to be set if its new
@@ -46,6 +47,9 @@ ad_form -name course-new -export {return_url package_id folder_id} -form {
         -identifier [util_text_to_url -text $name] \
         -org_folder_id $new_items_parent_id
     
+    if {[info exists return_url_base] && $return_url_base ne ""} {
+	set return_url [export_vars -base $return_url_base {man_id}]
+    }
     if {![info exists return_url] || $return_url eq ""} {
         set return_url [export_vars -base course-structure {man_id}]
     }
