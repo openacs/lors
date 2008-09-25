@@ -41,32 +41,32 @@ if {[db_0or1row manifest { }]} {
     
     # Course Name
     if {[empty_string_p $course_name]} {
-        set course_name "[_ lorsm.No_course_Name]"
+	set course_name "[_ lorsm.No_course_Name]"
     } 
 
     # Version
     set version [db_string get_versions { } -default 0]
 
     if {[string equal $version "0"]} {
-        set version_msg "[_ lorsm.No_version_Available]"
+	set version_msg "[_ lorsm.No_version_Available]"
     } 
     
     if { ![empty_string_p $fs_package_id] } {
-        # Folder
-        set folder [apm_package_url_from_id $fs_package_id]?[export_vars folder_id]
-        # Instance
-        set instance [apm_package_key_from_id $fs_package_id]
+	# Folder
+	set folder [apm_package_url_from_id $fs_package_id]?[export_vars folder_id]
+	# Instance
+	set instance [apm_package_key_from_id $fs_package_id]
     } else {
-        set fs_package_id [site_node_apm_integration::get_child_package_id \
-                               -package_id [dotlrn_community::get_package_id $community_id] \
-                               -package_key "file-storage"]
-        # Instance
-        set instance [lorsm::get_course_name -manifest_id $man_id]
-        # Folder
-	set root_folder [lorsm::get_root_folder_id]
-	
-	set folder_id [db_string get_folder_id { }]
-        set folder [apm_package_url_from_id $fs_package_id]?[export_vars folder_id]
+	set fs_package_id [site_node_apm_integration::get_child_package_id \
+			       -package_id [dotlrn_community::get_package_id $community_id] \
+			       -package_key "file-storage"]
+	# Instance
+	set instance [lorsm::get_course_name -manifest_id $man_id]
+	# Folder
+#	set root_folder [lorsm::get_root_folder_id]
+
+#	set folder_id [db_string get_folder_id { }]
+	set folder [apm_package_url_from_id $fs_package_id]?[export_vars folder_id]
     }
 
     # Created By
@@ -78,7 +78,7 @@ if {[db_0or1row manifest { }]} {
     # Check for submanifests
     if {[db_0or1row submans { }]} {
     } else {
-        set submanifests 0
+	set submanifests 0
     }
 
 
@@ -90,6 +90,10 @@ if {[db_0or1row manifest { }]} {
 
 
 append orgs_list "<table class=\"list\" cellpadding=\"3\" cellspacing=\"1\" width=\"100%\">"
+append orgs_list "<tr class=\"list-header\">
+        <th colspan=\"3\" class=\"list\" valign=\"top\" style=\"background-color: #e0e0e0; font-weight: bold;\">[_ lorsm.Items]</th>
+    </tr>
+"
 
 set pretty_types_map {}
 if { [apm_package_installed_p assessment] } {
@@ -98,7 +102,7 @@ if { [apm_package_installed_p assessment] } {
 if { [apm_package_installed_p xowiki] } {
 	append pretty_types_map "::xowiki::Page Content"
 }
-template::multirow create items course_name delete down folder_id fs_package_id hasmetadata href identifierref indent isshared item_id item_title object_id org_id res_identifier type up
+template::multirow create blah course_name delete down folder_id fs_package_id hasmetadata href identifierref indent isshared item_id item_title object_id org_id res_identifier type up
 db_multirow organizations organizations { } { }
 
 if {[info exists exclude] && [llength $exclude]} {
@@ -114,21 +118,24 @@ template::multirow foreach organizations {
     # We get the indent of the items in this org_id
     set indent_list [lorsm::get_items_indent -org_id $org_id -exclude $exclude]
     template::util::list_of_lists_to_array $indent_list indent_array
+    ns_log notice "BEFORE MULTIROW [template::multirow size blah]"
     
-    db_multirow items get_items "" {
-        if {[info exists indent_array($item_id)]} {
-            set indent [string repeat "&nbsp;&nbsp;" [expr {$indent_array($item_id)-1}]]
-        } else { set indent 1 }
+    db_multirow blah blah "" {
+	if {[info exists indent_array($item_id)]} {
+	    set indent [string repeat "&nbsp;&nbsp;" [expr {$indent_array($item_id)-1}]]
+	} else { set indent 1 }
             if {$type eq "webcontent" && ![string equal $identifierref {}]} {
-                set href "[apm_package_url_from_id_mem $fs_package_id]view/[db_string select_folder_key {select key from fs_folders where folder_id = :folder_id}]/[lorsm::fix_url -url $identifierref]"
-            } else {
-                set href "[lors::object_url -url admin -object_id $res_identifier -man_id $man_id]" 
-            }
-        set type [string map $pretty_types_map $type]
-        set delete [export_vars -base object-delete {item_id return_url}]
-        set up [export_vars -base reorder-items {item_id {dir up} return_url}]
-        set down [export_vars -base reorder-items {item_id {dir down} return_url}]
+		set href "[apm_package_url_from_id_mem $fs_package_id]view/[db_string select_folder_key {select key from fs_folders where folder_id = :folder_id}]/[lorsm::fix_url -url $identifierref]"
+	    } else {
+		set href "[lors::object_url -url admin -object_id $man_id]" 
+	    }
+	set type [string map $pretty_types_map $type]
+	set delete [export_vars -base object-delete {item_id return_url}]
+	set up [export_vars -base reorder-items {item_id {dir up} return_url}]
+	set down [export_vars -base reorder-items {item_id {dir down} return_url}]
+	ns_log notice "setting up '${up}' \n setting down '${down}'"
     }
+    ns_log notice "AFTER MULTIROW [template::multirow size blah]"
 
     append orgs_list "<tr class=\"list-even\">"
 
@@ -155,23 +162,31 @@ ad_form -name add-new -action object-new -export {man_id} -form {
     {add_new:text(submit) {label {[_ acs-kernel.common_Add]}}}    
 }
 
-template::list::create \
-    -name items \
-    -multirow items \
-    -elements {
-        item_title {
-            label "\#lorsm.Items\#"
-            link_url_col href
-        }
-        type {
-            label "Type"
-        }
-        actions {
-            label "Actions"
-            display_template {
-                <if @items.rownum@ gt 1><a href="@items.up@">Up</a> </if> <if @items.rownum@ lt @items:rowcount@><a href="@items.down@">Down</a></if> <a href="@items.delete;noquote@">Remove</a> 
-            }
-        }
-    }
+    template::list::create \
+	-name blah \
+	-multirow blah \
+	-elements {
+	    item_title {
+		label "\#lorsm.Item_Name\#"
+		link_url_col href
+	    }
+	    type {
+		label ""
+	    }
+	    delete {
+		label ""
+		display_template {
+		    <a href="@blah.delete;noquote@">delete</a>
+		}
+	    }
+	    up {
+		label ""
+		display_template {<if @blah.rownum@ gt 1><a href="@blah.up@">Up</a></if>}
+	    }
+	    down {
+		label ""
+		display_template {<if @blah.rownum@ lt @blah:rowcount@><a href="@blah.down@">Down</a></if>}
+	    }
+	}
 
-set rename_url [export_vars -base course-rename {man_id}]
+
