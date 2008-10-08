@@ -320,6 +320,8 @@ ad_proc -public lors::imscp::manifest_delete {
         if {$delete_all} {
             
             # FIXME remove ims metadata
+	    # metadata should have on delete casacade
+	    
             # To delete a course we need to
 
             # remove file storage items
@@ -1230,3 +1232,11 @@ ad_proc -public lors::imscp::resource_add_from_object {
     return $res_id
 }
 
+ad_proc -public lors::imscp::item_get_identifier {
+    -ims_item_id
+    -man_id
+} {
+    Get indentifier which should help us resolve what object his points to
+} {
+    return [db_string get_indentifier "" -default ""]
+}

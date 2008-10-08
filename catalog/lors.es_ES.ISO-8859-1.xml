@@ -2,7 +2,6 @@
 <message_catalog package_key="lors" locale="es_ES" charset="ISO-8859-1">
 
   <msg key="_The">El error fue:</msg>
-  <msg key="Down">Abajo</msg>
   <msg key="lt_dont_know_how_to_extr">No puede extraerse</msg>
   <msg key="lt_Error_inserting_folde">Error al insertar carpeta</msg>
   <msg key="lt_this_thing_is_open_no">Ahora está abierto</msg>
@@ -12,5 +11,4 @@
   <msg key="lt_Transaction_Error_whi">Error de transacción al añadir metadatos</msg>
   <msg key="The_error_was">El error fue:</msg>
   <msg key="The_error_was_errmsg">El error fue: $errmsg</msg>
-  <msg key="Up">Arriba</msg>
 </message_catalog>

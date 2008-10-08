@@ -1,5 +1,5 @@
 
-<table class="list" cellpadding="3" cellspacing="1" width="70%">
+<table class="list" cellpadding="3" cellspacing="1" width="90%">
     <tr class="list-header">
         <th class="list" valign="top" style="background-color: #e0e0e0; font-weight: bold;" colspan="2">
         #lorsm.Course_Information#
@@ -13,12 +13,13 @@
                 @course_name;noquote@
                 (@identifier@)
 	 	#lorsm.Course_Versions#
+	<br /><a href="@rename_url@">#lors.Rename_Course#</a>
               </td>
 </tr>
 <tr class="list-even"><td class="list"  style="background-color: #e0e0e0; font-weight: bold; width:20%" ><a href="javascript:void(0)" onClick="document.getElementById('lors-advanced-course-structure').style.display='';">More Info</a></td><td class="list">&nbsp;</td></tr>
 </table>
 <div id="lors-advanced-course-structure" style="display:none;">
-<table class="list" cellpadding="3" cellspacing="1" width="70%">
+<table class="list" cellpadding="3" cellspacing="1" width="90%">
               <tr class="list-even">
               <td class="list" valign="top" style="background-color: #e0e0e0; font-weight: bold; width:20%">
                 #lorsm.Metadata#
@@ -106,6 +107,7 @@
               <td class="list" valign="top" style="background-color: #f0f0f0">
                 <if @istrackable@ eq t>
                  <b>#lorsm.Yes#</b>
+		( <a href="tracking/?man_id=@man_id@">#lorsm.lt_Track_Students_Progre#</a> )
                 </if>
                 <else>
                  <b>#lorsm.No#</b>
@@ -144,29 +146,8 @@
           </tr>
 </table>
 </div>
-<if @extra_admin_html@ not nil>
-	@extra_admin_html;noquote@
-</if>
-
-<table class="list" cellpadding="3" cellspacing="1" width="70%">
-    <tr class="list-header">
-        <th class="list" valign="top" style="background-color: #e0e0e0; font-weight: bold;" colspan="2">
-         #lorsm.Organizations#
-        </th>
-    </tr>
-              <tr class="list-odd">
-              <td  valign="top" style="background-color: #f0f0f0; font-weight: bold;" colspan="2">
-
-              </td>
-          </tr>
-              <tr class="list-odd">
-              <td  valign="top" style="background-color: #f0f0f0;
-          font-weight: bold;" colspan="2">
-          <formtemplate style="inline" id="add-new"></formtemplate>
+<if @extra_admin_html@ not nil>@extra_admin_html;noquote@</if>
+<hr>
           @orgs_list;noquote@
-              </td>
-          </tr>
-</table>
 
-
-<listtemplate name="blah"></listtemplate>
+<listtemplate name="items"></listtemplate>
