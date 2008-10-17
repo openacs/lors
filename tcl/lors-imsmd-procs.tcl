@@ -1135,9 +1135,9 @@ namespace eval lors::imsmd {
                 
                 set itemxx [$itemx child all item]
                 if { ![empty_string_p $itemxx] } {
-                    printx "<blockquote>" " "
+                    printx "<p>" " "
                     getItem $itemx
-                    printx "</blockquote>" ""
+                    printx "</p>" ""
                 }
             }
         }
