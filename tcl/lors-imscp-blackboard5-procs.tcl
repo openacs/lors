@@ -69,7 +69,9 @@ ad_proc -public lors::imscp::bb::getDates {
     if {![empty_string_p dates_node]} {
         set created [$dates_node child all CREATED]
         set updated [$dates_node child all UPDATED]
-        return [list [lors::imsmd::getAtt $created value] [lors::imsmd::getAtt $updated value]]
+        return [list \
+                    [lors::imsmd::getAtt $created value] \
+                    [lors::imsmd::getAtt $updated value]]
     } else {
         return ""
     }
@@ -107,7 +109,7 @@ ad_proc -public lors::imscp::bb::getNavigationItems {
 
     @option name Name of the attribute to get
     @option node XML node
-    
+
     @author Ernie Ghiglione (ErnieG@mm.st)
 } {
     set navigation [$node child all [string toupper NAVIGATION]]
@@ -158,7 +160,7 @@ ad_proc -public lors::imscp::bb::getOriginInfo {
 ad_proc -public lors::imscp::bb::getUsers {
     -file:required
 } {
-    Gets the Blackboard users from the XML resource file where the user info is. 
+    Gets the Blackboard users from the XML resource file where the user info is.
     Returns a list of user attributes
 
     @option file File and filepath to XML file
@@ -171,7 +173,6 @@ ad_proc -public lors::imscp::bb::getUsers {
     set userlist [list]
     set emails [list]
     foreach user [$usersnode child all USER] {
-
         set user_id [$user getAttribute id]
         set login_id [[$user getElementsByTagName LOGINID] getAttribute value]
         set passphrase [[$user getElementsByTagName PASSPHRASE] getAttribute value]
@@ -179,34 +180,38 @@ ad_proc -public lors::imscp::bb::getUsers {
         set first_names [[$user getElementsByTagName GIVEN] getAttribute value]
         set email [[$user getElementsByTagName EMAIL] getAttribute value]
 
-# For testing purpose only... has to be removed later
-
+        # For testing purpose only... has to be removed later
         set email $login_id@box.com
-
-#
 
         set creation_date [[$user getElementsByTagName CREATED] getAttribute value]
         set updated_date [[$user getElementsByTagName UPDATED] getAttribute value]
         set active [[$user getElementsByTagName ISAVAILABLE] getAttribute value]
-        set role_value [string tolower [[$user getElementsByTagName ROLE] getAttribute value]]
+        set role_value [string tolower [
+            [$user getElementsByTagName ROLE] getAttribute value]]
 
         switch $role_value {
             instructor {
                 set role "professor"
-            }
-            default {
+            } default {
                 set role "student"
             }
         }
 
-        set role_description [[$user getElementsByTagName ROLE] getAttribute description]
-        
-        lappend userlist [list "user_id" $user_id "login_id" $login_id "passphrase" $passphrase "last_names" $last_names "first_names" $first_names "email" $email \
-                              "creation_date" $creation_date "updated_date" $updated_date "active" $active "role" $role "role_description" $role_description]
+        set role_description [
+            [$user getElementsByTagName ROLE] getAttribute description]
 
+        lappend userlist [list  "user_id" $user_id \
+                                "login_id" $login_id \
+                                "passphrase" $passphrase \
+                                "last_names" $last_names \
+                                "first_names" $first_names \
+                                "email" $email \
+                                "creation_date" $creation_date \
+                                "updated_date" $updated_date \
+                                "active" $active \
+                                "role" $role \
+                                "role_description" $role_description]
     }
-    
     return $userlist
-
 }
 
