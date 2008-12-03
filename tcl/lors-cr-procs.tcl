@@ -96,9 +96,7 @@ ad_proc -public lors::cr::add_folder {
     #return [list $name $folder_name $parent_id $user_id $creation_ip]
     # create the folder
 
-    set folder_id [db_exec_plsql folder_create {
-        select lors__new_folder (:name, :folder_name, :parent_id, :user_id, :creation_ip);
-    }]
+    set folder_id [db_exec_plsql folder_create {}]
 
     content::folder::register_content_type \
         -folder_id $folder_id \
@@ -180,9 +178,7 @@ ad_proc -public lors::cr::add_files {
         set file_size [cr_file_size $cr_file]
 
         # update the file path in the CR and the size on cr_revisions
-        db_dml update_revi \
-            "update cr_revisions set content = '$cr_file',
-            content_length = $file_size where revision_id = :version_id"
+        db_dml update_revi {}
 
         lappend retlist [list $fle $mime_type $parent_id $file_id $version_id $cr_file $file_size]
     }
@@ -200,6 +196,5 @@ ad_proc -public lors::cr::get_item_id {
         set package_id [ad_conn package_id]
         set folder_id [fs_get_root_folder -package_id $package_id]
     }
-    return [db_exec_plsql get_item_id \
-                "select content_item__get_id ( :name, :folder_id, 'f' )"]
+    return [db_exec_plsql get_item_id {}]
 }

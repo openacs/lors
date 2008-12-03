@@ -18,18 +18,6 @@ set package_id [ad_conn package_id]
 set community_id [dotlrn_community::get_community_id]
 set return_url [ad_return_url]
 
-ad_proc -public getFolderKey {
-    {-object_id:required}
-    } {
-        Gets the Folderkey for a file-storage folder_id
-
-        @option object_id Folder_id for file-storage folder
-        @author Ernie Ghiglione (ErnieG@mm.st)
-
-    } {
-        return [db_string select_folder_key "select key
-                    from fs_folders where object_id = :object_id"]
-    }
 
 # set context & title
 set context [list "[_ lorsm.Course_Structure]"]
@@ -78,7 +66,7 @@ if {[db_0or1row manifest { }]} {
     set creation_date [lc_time_fmt $creation_date "%x %X"]
 
     # Check for submanifests
-    if {[db_0or1row submans { }]} {
+    if {[db_0or1row submans {}]} {
     } else {
         set submanifests 0
     }
@@ -115,10 +103,7 @@ if {[info exists exclude] && [llength $exclude]} {
 }
 
 template::multirow foreach organizations {
-    set total_items [db_string items_count \
-                        "select count(*)
-                        from ims_cp_items i
-                        where org_id=:org_id $exclude_where" -default 0]
+    set total_items [db_string items_count {} -default 0]
     # We get the indent of the items in this org_id
     set indent_list [lorsm::get_items_indent -org_id $org_id -exclude $exclude]
     template::util::list_of_lists_to_array $indent_list indent_array
@@ -132,9 +117,7 @@ template::multirow foreach organizations {
 
         if {$type eq "webcontent" && ![string equal $identifierref {}]} {
             set href "[apm_package_url_from_id_mem $fs_package_id]view/
-                [db_string select_folder_key {select key from fs_folders
-                    where folder_id = :folder_id}]/[lorsm::fix_url
-                    -url $identifierref]"
+                [db_string select_folder_key {}]/[lorsm::fix_url -url $identifierref]"
         } else {
             set href "[lors::object_url \
                         -url admin \

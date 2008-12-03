@@ -43,12 +43,7 @@ ad_proc -public lors::object_url {
                     # page anchor
                     set assessment_id ""
                     set sort_order ""
-                    db_0or1row get_assessment_id \
-                        "select ci.item_id as assessment_id, sort_order
-                        from cr_items ci, cr_revisions cr, as_assessment_section_map m
-                        where cr.item_id=:object_id
-                            and cr.revision_id=m.section_id
-                            and ci.latest_revision=assessment_id"
+                    db_0or1row get_assessment_id {}
 
                     return [export_vars \
                                 -base questions \

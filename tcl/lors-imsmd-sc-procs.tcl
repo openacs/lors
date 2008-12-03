@@ -29,10 +29,7 @@ namespace eval lors::imsmd::sc {
         # languages. We get them all here.
         set titles ""
 
-        db_foreach title {
-                select title_l, title_s
-                from ims_md_general_title
-                where ims_md_id = :ims_md_id} {
+        db_foreach title {} {
 
             if {![empty_string_p $title_l]} {
                 append titles "$title_s ($title_l) "
@@ -47,10 +44,7 @@ namespace eval lors::imsmd::sc {
 
         set descriptions ""
 
-        db_foreach description {
-                        select descrip_l, descrip_s
-                        from ims_md_general_desc
-                        where ims_md_id = :ims_md_id} {
+        db_foreach description {} {
 
             if {![empty_string_p $descrip_l]} {
                 append descriptions "$descrip_s ($descrip_l) "
@@ -67,10 +61,7 @@ namespace eval lors::imsmd::sc {
         # LOM General Keywords
 
         set keywords ""
-        db_foreach keyword {
-                    select keyword_l, keyword_s
-                    from ims_md_general_key
-                    where ims_md_id = :ims_md_id} {
+        db_foreach keyword {} {
             if {![empty_string_p $keyword_l]} {
                 append keywords "$keyword_s ($keyword_l) "
             } else {

@@ -275,13 +275,7 @@ ad_proc -public lors::imscp::manifest_add {
 
     } else {
         set item_id $version_id
-        set isshared [db_string get_isshared \
-            "select im.isshared
-            from ims_cp_manifests im
-            where im.man_id = (
-                select live_revision
-                from cr_items
-                where item_id = :version_id) "]
+        set isshared [db_string get_isshared {}]
     }
 
     set revision_id [content::revision::new \
@@ -296,27 +290,7 @@ ad_proc -public lors::imscp::manifest_add {
     # Now the new revision_id will be sent to the sql function with the
     # additional information as before
 
-    set manifest_id [db_exec_plsql new_manifest {
-            select ims_manifest__new (
-                                :course_name,
-                                :identifier,
-                                :version,
-                                :orgs_default,
-                                :hasmetadata,
-                                :parent_man_id,
-                                :isscorm,
-                                :content_folder_id,
-                                :fs_package_id,
-                                current_timestamp,
-                                :user_id,
-                                :creation_ip,
-                                :package_id,
-                                :community_id,
-                                :class_key,
-                :revision_id,
-                                :isshared,
-                :course_presentation_format
-                                );}]
+    set manifest_id [db_exec_plsql new_manifest {}]
 
     return $manifest_id
 }
@@ -341,12 +315,7 @@ ad_proc -public lors::imscp::manifest_delete {
 
             # remove file storage items
 
-            foreach file_item_id [db_list get_files \
-                "select item_id
-                from cr_revisions cr, ims_cp_files f, ims_cp_resources r
-                where f.res_id=r.res_id
-                    and r.man_id=:man_id
-                    and cr.revision_id=f.file_id"] {
+            foreach file_item_id [db_list get_files {}] {
                 # delete related file_storage files
                 content::item::delete -item_id $file_item_id
             }
@@ -355,19 +324,8 @@ ad_proc -public lors::imscp::manifest_delete {
             # is removed (on delete cascade on res_id)
 
             # remove ims_cp_items
-            foreach item_id [db_list get_items \
-                "select cr.item_id
-                from cr_revisions cr, ims_cp_items i, ims_cp_items_to_resources ir, ims_cp_resources r
-                where r.man_id=:man_id
-                    and r.res_id=ir.res_id
-                    and i.ims_item_id=ir.ims_item_id
-                    and cr.revision_id=i.ims_item_id"] {
-                db_dml delete_map \
-                    "delete from ims_cp_items_map
-                    where ims_item_id in
-                    (select revision_id
-                        from cr_revisions
-                        where item_id=:item_id)"
+            foreach item_id [db_list get_items {}] {
+                db_dml delete_map {}
                 # ad_return_complaint 1 "item_id $item_id ims_item_id $ims_item_id"
                 content::item::delete -item_id $item_id
             }
@@ -376,42 +334,27 @@ ad_proc -public lors::imscp::manifest_delete {
             # ims_cp_items row is deleted (on delete cascade)
 
             # remove ims_cp_resources
-            foreach res_item_id [db_list get_res \
-                "select item_id
-                from cr_revisions, ims_cp_resources
-                where revision_id=res_id
-                    and man_id=:man_id"] {
+            foreach res_item_id [db_list get_res {}] {
                 content::item::delete -item_id $res_item_id
             }
 
             # remove rows in lorsm_cmi_core
-            db_dml delete_cmi "delete from lorsm_cmi_core where man_id=:man_id"
+            db_dml delete_cmi {}
 
             # remove rows in lorsm_student_track
-            db_dml delete_track "delete from lorsm_student_track where course_id = :man_id"
+            db_dml delete_track {}
             # FIXME see if other lorms tables need to be cleaned out
 
             # remove ims_cp_organization
-            foreach org_item_id [db_list get_org \
-                "select item_id
-                from cr_revisions, ims_cp_organizations
-                where revision_id=org_id
-                    and man_id=:man_id"] {
-
-                db_dml delete_map \
-                    "delete from ims_cp_items_map
-                    where org_id in (select revision_id
-                        from cr_revisions
-                        where item_id=:org_item_id)"
+            foreach org_item_id [db_list get_org {}] {
+                db_dml delete_map_2 {}
                 content::item::delete -item_id $org_item_id
             }
 
             # remove ims_cp_manifest_class
             # this deletes the association between the course and all dotlrn
             # classes where it was used
-            db_dml delete_manifest_class \
-                "delete from ims_cp_manifest_class
-                where man_id=:man_id"
+            db_dml delete_manifest_class {}
         }
         set ret [content::item::delete \
                     -item_id [content::revision::item_id \
@@ -486,22 +429,7 @@ ad_proc -public lors::imscp::organization_add {
                         -item_id $item_id \
                         -is_live "t"]
 
-    set organization_id [db_exec_plsql new_organization {
-            select ims_organization__new (
-                                :org_id,
-                                :man_id,
-                                :identifier,
-                                :structure,
-                                :title,
-                                :hasmetadata,
-                                current_timestamp,
-                                :user_id,
-                                :creation_ip,
-                                :package_id,
-                :revision_id
-                                );
-
-    }]
+    set organization_id [db_exec_plsql new_organization {}]
     return $organization_id
 }
 
@@ -514,8 +442,7 @@ ad_proc -public lors::imscp::organization_delete {
     @author Ernie Ghiglione (ErnieG@mm.st)
 } {
 
-    set ret [db_exec_plsql delete_organization {
-            select ims_organization__delete (:org_id);}]
+    set ret [db_exec_plsql delete_organization {}]
 
     return $ret
 }
@@ -621,41 +548,11 @@ ad_proc -public lors::imscp::item_add {
                         -item_id $cr_item_id \
                         -is_live "t"]
 
-    set item_id [db_exec_plsql new_item {
-            select ims_item__new (
-                                :item_id,
-                                :org_id,
-                                :identifier,
-                                :identifierref,
-                                :isvisible,
-                                :parameters,
-                                :title,
-                                :parent_item,
-                                :hasmetadata,
-                                :prerequisites_t,
-                                :prerequisites_s,
-                                :type,
-                                :maxtimeallowed,
-                                :timelimitaction,
-                                :datafromlms,
-                                :masteryscore,
-                                current_timestamp,
-                                :user_id,
-                                :creation_ip,
-                                :package_id,
-                :revision_id
-                                );
+    set item_id [db_exec_plsql new_item {}]
 
-    }]
+    set next_sort_order [db_string get_max {}]
 
-    set next_sort_order [db_string get_max \
-                            "select coalesce(max(sort_order)+1,1)
-                            from ims_cp_items
-                            where org_id=:org_id"]
-    db_dml set_sort_order \
-        "update ims_cp_items
-        set sort_order = :next_sort_order
-        where ims_item_id = :item_id"
+    db_dml set_sort_order {}
 
     if {![empty_string_p $dotlrn_permission]} {
         permission::toggle_inherit -object_id $item_id
@@ -703,11 +600,7 @@ ad_proc -public lors::imscp::item_delete {
     db_transaction {
         content::item::delete \
             -item_id [content::revision::item_id -revision_id $item_id]
-        set ret [db_exec_plsql delete_item {
-                select ims_item__delete (
-                                    :item_id
-                                    );
-        }]
+        set ret [db_exec_plsql delete_item {}]
     }
     return $ret
 }
@@ -859,23 +752,7 @@ ad_proc -public lors::imscp::resource_add {
                         -item_id $item_id \
                         -is_live "t"]
 
-    set resource_id [db_exec_plsql new_resource {
-                select ims_resource__new (
-                                    :res_id,
-                                    :man_id,
-                                    :identifier,
-                                    :type,
-                                    :href,
-                                    :scorm_type,
-                                    :hasmetadata,
-                                    current_timestamp,
-                                    :user_id,
-                                    :creation_ip,
-                                    :package_id,
-                    :revision_id
-                                    );
-
-        }]
+    set resource_id [db_exec_plsql new_resource {}]
     return $resource_id
 }
 
@@ -891,12 +768,7 @@ ad_proc -public lors::imscp::resource_delete {
     db_transaction {
         content::item::delete \
             -item_id [content::revision::item_id -revision_id $res_id]
-        set ret [db_exec_plsql delete_resource {
-                select ims_resource__delete (
-                                    :res_id
-                                    );
-
-        }]
+        set ret [db_exec_plsql delete_resource {}]
     }
     return $ret
 }
@@ -913,13 +785,7 @@ ad_proc -public lors::imscp::item_to_resource_add {
     @author Ernie Ghiglione (ErnieG@mm.st)
 } {
 #    db_transaction {
-        set item_to_resource [db_exec_plsql item_to_resources_add {
-            select  ims_cp_item_to_resource__new (
-                                         :item_id,
-                                         :res_id
-                                         );
-        }
-                       ]
+        set item_to_resource [db_exec_plsql item_to_resources_add {}]
 #    }
     return $item_to_resource
 }
@@ -936,13 +802,7 @@ ad_proc -public lors::imscp::dependency_add {
     @author Ernie Ghiglione (ErnieG@mm.st)
 } {
     set dep_id [db_nextval ims_cp_dependencies_seq]
-    set dependency [db_exec_plsql dependency_add {
-        select  ims_dependency__new (
-                                     :dep_id,
-                                     :res_id,
-                                     :identifierref
-                                     );
-    }]
+    set dependency [db_exec_plsql dependency_add {}]
     return $dep_id
 }
 
@@ -955,12 +815,7 @@ ad_proc -public lors::imscp::dependency_delete {
     @author Ernie Ghiglione (ErnieG@mm.st)
 } {
 
-    set ret [db_exec_plsql delete_resource {
-            select ims_dependency__delete (
-                                :dep_id
-                                );
-
-    }]
+    set ret [db_exec_plsql delete_resource {}]
     return $ret
 }
 
@@ -990,22 +845,10 @@ ad_proc -public lors::imscp::file_add {
     # catch that before we try to insert them again under the same
     # resource
 
-    set file_exists [db_0or1row file_ex \
-                        "select file_id
-                        from ims_cp_files
-                        where file_id = :file_id
-                            and res_id = :res_id"]
+    set file_exists [db_0or1row file_ex {}]
 
     if {$file_exists == 0} {
-        set file [db_exec_plsql file_add {
-                select  ims_file__new (
-                                         :file_id,
-                                         :res_id,
-                                         :pathtofile,
-                                         :filename,
-                                         :hasmetadata
-                                         );
-        }]
+        set file [db_exec_plsql file_add {}]
     }
     return $file_id
 }
@@ -1233,10 +1076,7 @@ ad_proc -public lors::imscp::item_add_from_object {
     }
     # get the title from acs objects
 
-    db_1row get_object \
-        "select object_type, title
-        from acs_objects
-        where object_id=:object_id" -column_array object
+    db_1row get_object {} -column_array object
 
     if {$title eq ""} {
         set title $object(title)
@@ -1253,12 +1093,7 @@ ad_proc -public lors::imscp::item_add_from_object {
                      -identifierref $object_id \
                      -parent_item $parent_item \
                      -title $title]
-    db_dml set_sort_order \
-        "update ims_cp_items
-        set sort_order = (select coalesce(max(sort_order),0)
-                        from ims_cp_items
-                        where parent_item=:parent_item) + 1
-        where ims_item_id=:item_id"
+    db_dml set_sort_order {}
 
     return $item_id
 }
@@ -1285,10 +1120,7 @@ ad_proc -public lors::imscp::resource_add_from_object {
 
     @error
 } {
-    db_1row get_object \
-        "select object_type, title
-        from acs_objects
-        where object_id=:object_id" -column_array object
+    db_1row get_object {} -column_array object
     if {$object(object_type) eq "content_item"} {
         set object(object_type) [content::item::content_type -item_id $object_id]
     }

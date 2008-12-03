@@ -33,14 +33,7 @@ ad_proc -callback application-track::getApplicationName -impl lorsm {} {
 ad_proc -callback application-track::getGeneralInfo -impl lorsm {} {
     callback implementation
 } {
-    db_1row my_query {
-        select count(1) as result
-        from (
-            select distinct l.course_id
-            from lorsm_student_track l
-            where l.community_id=:comm_id
-            group by l.course_id) as t
-    }
+    db_1row my_query {}
     return "$result"
 }
 

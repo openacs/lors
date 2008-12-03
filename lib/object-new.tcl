@@ -11,12 +11,7 @@ switch $add_type {
         set assessment_package_id [dotlrn_community::get_applet_package_id \
                                     -community_id $dotlrn_package_id \
                                     -applet_key dotlrn_assessment]
-        set options [db_list_of_lists get_assessments \
-                        "select o.title,a.assessment_id
-                        from as_assessments a, cr_items i, acs_objects o
-                        where o.object_id=a.assessment_id
-                            and i.latest_revision=a.assessment_id
-                            and o.package_id=:assessment_package_id"]
+        set options [db_list_of_lists get_assessments {}]
     } wiki {
         # get a list of all the wiki pages
         # find xowiki package
@@ -67,23 +62,12 @@ ad_form \
         # FIXME pretend we can only have one organization per course
         # this is fine since we are not supporting a user interface to
         # create more than one way to organize the items in one manifest
-        set org_id [db_string get_org_id \
-                        "select org_id
-                        from ims_cp_organizations
-                        where man_id=:man_id"]
-        set item_folder_id [db_string get_folder_id \
-                                "select parent_id
-                                from cr_items
-                                where latest_revision=:org_id"]
+        set org_id [db_string get_org_id {}]
+        set item_folder_id [db_string get_folder_id {} ]
         switch $add_type {
             assessment {
                 # we want one lors item per section
-                set sections [db_list_of_lists get_sections \
-                                "select a.item_id as section_item_id,a.name,a.title
-                                from cr_items ci, as_sectionsx a, as_assessment_section_map m
-                                where m.assessment_id=:existing_object
-                                    and a.section_id=m.section_id
-                                    and ci.latest_revision=m.assessment_id"]
+                set sections [db_list_of_lists get_sections {}]
 
                 foreach {section} $sections {
                     foreach {section_item_id section_name section_title} \
@@ -93,22 +77,14 @@ ad_form \
                     # we'll just let an admin add the assessment as many times
                     # as they like, if there a new sections they will get added
 
-                    if {![db_0or1row section_exists \
-                            "select res_id
-                            from ims_cp_resources
-                            where identifier=:section_item_id
-                                and man_id=:man_id"]} {
+                    if {![db_0or1row section_exists {}]} {
                         set res_id [lors::imscp::resource_add_from_object \
                                         -man_id $man_id \
                                         -object_id $section_item_id \
                                         -folder_id $item_folder_id]
                     }
 
-                    if {![db_0or1row item_exists \
-                            "select ims_item_id as item_id
-                            from ims_cp_items
-                            where org_id=:org_id
-                                and identifier='as_sections_' || :section_item_id"]} {
+                    if {![db_0or1row item_exists {}]} {
                         set item_id [lors::imscp::item_add_from_object \
                                         -object_id $section_item_id \
                                         -org_id $org_id \
@@ -132,22 +108,14 @@ ad_form \
                 set page [::Generic::CrItem instantiate \
                             -item_id $existing_object]
                 $page instvar {title page_title} {name page_name}
-                if {![db_0or1row res_exists \
-                        "select res_id
-                        from ims_cp_resources
-                        where identifier=:existing_object
-                            and man_id=:man_id"]} {
+                if {![db_0or1row res_exists {}]} {
                     set res_id [lors::imscp::resource_add_from_object \
                                     -man_id $man_id \
                                     -object_id $existing_object \
                                     -folder_id $item_folder_id]
                 }
 
-                if {![db_0or1row item_exists \
-                        "select ims_item_id
-                        from ims_cp_items
-                        where org_id=:org_id
-                            and identifier='::xowiki::Page_' || :existing_object"]} {
+                if {![db_0or1row item_exists_2 {}]} {
                     set item_id [lors::imscp::item_add_from_object \
                                     -object_id $existing_object \
                                     -org_id $org_id \

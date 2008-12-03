@@ -6,7 +6,8 @@
 
     <tr class="list-odd">
         <td class="list" valign="top" style="background-color: #e0e0e0; font-weight: bold; width:20%;" >#lorsm.Course_Name#</td>
-        <td class="list" valign="top" style="background-color: #f0f0f0; font-weight: bold;">@course_name;noquote@(@identifier@)#lorsm.Course_Versions#<br />
+        <td class="list" valign="top" style="background-color: #f0f0f0; font-weight: bold;">
+            @course_name;noquote@(@identifier@)#lorsm.Course_Versions#<br />
             <a href="@rename_url@">#lors.Rename_Course#</a>
         </td>
     </tr>
