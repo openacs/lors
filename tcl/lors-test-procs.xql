@@ -3,10 +3,10 @@
 
     <fullquery name="get_package">
         <querytext>
-                select package_id
-                from apm_packages
-                where package_key='lorsm'
-                limit 1
+            select package_id
+            from apm_packages
+            where package_key='lorsm'
+            limit 1
         </querytext>
     </fullquery>
 
@@ -120,7 +120,6 @@
             from ims_cp_manifests
             where man_id=:man_id
         </querytext>
-    </fullquery>
     </fullquery>
 
 </queryset>
