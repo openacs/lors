@@ -340,10 +340,7 @@ create table ims_cp_manifest_class (
                         references apm_packages (package_id),
     community_id	integer
 			constraint ims_cp_manifest_class__comm_id_fk
-			references dotlrn_communities_all(community_id),
-    class_key		varchar(100)
-			constraint ims_cp_manifest_class__class_key_fk
-  			references dotlrn_community_types(community_type),
+			references groups(group_id),
     isenabled           boolean default 't' not null,
     istrackable         boolean default 'f' not null
                         -- primary key (man_id, lorsm_instance_id)
@@ -365,10 +362,6 @@ This is the package_id for the instance of LORMS in a particular
 
 comment on column ims_cp_manifest_class.community_id is '
 This is the package_id for the class/community that the manifest got uploaded
-';
-
-comment on column ims_cp_manifest_class.class_key is '
-This is the class_key for the class/community
 ';
 
 comment on column ims_cp_manifest_class.isenabled is '

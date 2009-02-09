@@ -37,7 +37,6 @@ create or replace function ims_manifest__new (
     varchar,    -- creation_ip
     integer,    -- package_id
     integer,    -- community_id
-    varchar,     -- class_key
     integer,     -- new revision_id for the item in the CR
     boolean,      -- is shared
     integer 	-- course_presentation_format
@@ -58,10 +57,9 @@ declare
     p_creation_ip                alias for $12;
     p_package_id                 alias for $13;
     p_community_id               alias for $14;
-    p_class_key                  alias for $15;
-    p_revision_id                alias for $16;
-    p_isshared                   alias for $17;
-    p_course_presentation_format alias for $18;
+    p_revision_id                alias for $15;
+    p_isshared                   alias for $16;
+    p_course_presentation_format alias for $17;
 begin
   
         -- we make an update here because the content::item::new already inserts a row in the ims_cp_manifests
@@ -74,9 +72,9 @@ begin
 	-- now we add it to the manifest_class relation table
 
 	insert into ims_cp_manifest_class
-	(man_id, lorsm_instance_id, community_id, class_key, isenabled, istrackable)
+	(man_id, lorsm_instance_id, community_id, isenabled, istrackable)
 	values
-	(p_revision_id, p_package_id, p_community_id, p_class_key, ''t'', ''f'');
+	(p_revision_id, p_package_id, p_community_id, ''t'', ''f'');
         
         return p_revision_id;
 end;

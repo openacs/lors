@@ -11,6 +11,15 @@ ad_library {
 
 namespace eval lors:: {}
 
+ad_proc lors::community_id {
+    -node_id
+} {
+    if { ![info exists node_id] } {
+        set node_id [ad_conn node_id]
+    }
+    application_group::closest_ancestor_application_group_id -node_id $node_id
+}
+
 ad_proc -public lors::object_url {
     -object_id
     {-man_id ""}

@@ -27,7 +27,7 @@
                 ( :course_name, :identifier, :version, :orgs_default, :hasmetadata,
                     :parent_man_id, :isscorm, :content_folder_id, :fs_package_id,
                     current_timestamp, :user_id, :creation_ip, :package_id,
-                    :community_id, :class_key, :revision_id, :isshared,
+                    :community_id, :revision_id, :isshared,
                     :course_presentation_format )
         </querytext>
     </fullquery>

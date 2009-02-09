@@ -73,7 +73,6 @@ create table ims_cp_manifest_class_copy (
     man_id              integer,
     lorsm_instance_id   integer,
     community_id	integer,
-    class_key		varchar(100),
     isenabled           boolean default 't' not null,
     istrackable         boolean default 'f' not null
 );
@@ -177,7 +176,6 @@ insert into ims_cp_manifest_class_copy (
 	man_id,
     	lorsm_instance_id,
     	community_id,
-    	class_key,
     	isenabled,
         istrackable
 ) select * from ims_cp_manifest_class;

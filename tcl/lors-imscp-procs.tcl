@@ -237,8 +237,6 @@ ad_proc -public lors::imscp::manifest_add {
         set content_folder_id $folder_id
     }
 
-    set class_key [dotlrn_community::get_community_type_from_community_id $community_id]
-
     #########################################################################################
     # Since now we dont use acs-objects for the manifest, then a new cr_item and revision
     # needs to be done to store the manifest. The cr_item and cr_revision are created here

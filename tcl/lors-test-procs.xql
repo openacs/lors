@@ -28,7 +28,6 @@
                 null,
                 :__package_id,
                 null, --community_id
-                null, --class_key
                 null) --presentation_format
         </querytext>
     </fullquery>

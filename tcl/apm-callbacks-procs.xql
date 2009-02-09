@@ -44,7 +44,7 @@
     <fullquery name="lors::apm_callback::upgrade_code.insert_manifest_class">
         <querytext>
             insert into ims_cp_manifest_class
-                ( man_id, lorsm_instance_id, community_id, class_key, isenabled,istrackable)
+                ( man_id, lorsm_instance_id, community_id, isenabled,istrackable)
                 select *
                 from ims_cp_manifest_class_copy
                 where man_id = :new_man_revision_id
