@@ -10,7 +10,7 @@ ad_page_contract {
 # ad_form requires man_id NOT to be set if its new
 
 if {![info exists community_id]} {
-    set community_id [dotlrn_community::get_community_id]
+    set community_id [lors::get_community_id]
 }
 
 if {![info exists package_id]} {

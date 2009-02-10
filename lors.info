@@ -16,6 +16,7 @@
         <license_url>http://www.gnu.org/copyleft/gpl.html</license_url>
         <maturity>1</maturity>
         <provides url="lors" version="0.7d2"/>
+        <requires url="acs-subsite" version="5.5.0d7"/>
         <requires url="file-storage" version="5.4.0d7"/>
 
         <callbacks>

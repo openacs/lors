@@ -552,37 +552,17 @@ ad_proc -public lors::imscp::item_add {
 
     db_dml set_sort_order {}
 
+    # DRB: I stripped out a bunch of commented-out permission twiddling that leads me
+    # to believe this is pretty much bogus.  However I've left in the toggle inherit.
+    # This doesn't lead to a dotlrn dependency per se because this is driven throughout
+    # by parameters and an extension to the course XML (manifest? haven't looked closely).
+    # My work for MGH doesn't extend to fixing every stupid thing I find, just getting
+    # lorsm/lors to work without dotlrn being present, without breaking it within the
+    # dotlrn environment.
+
     if {![empty_string_p $dotlrn_permission]} {
         permission::toggle_inherit -object_id $item_id
 
-        #set community_id [dotlrn_community::get_community_id]
-
-        # Set read permissions for community/class dotlrn_admin_rel
-
-        #set party_id_admin [db_string party_id {select segment_id from rel_segments \
-                                 where group_id = :community_id \
-                                 and rel_type = 'dotlrn_admin_rel'}]
-
-        #permission::grant -party_id $party_id_admin -object_id $item_id -privilege read
-
-
-        # Set read permissions for *all* other professors  within .LRN
-        # (so they can see the content)
-
-            #set party_id_professor [db_string party_id {select segment_id from rel_segments \
-                                                         where rel_type = 'dotlrn_professor_profile_rel'}]
-
-        #permission::grant -party_id $party_id_professor -object_id $item_id -privilege read
-
-        # Set read permissions for *all* other admins within .LRN
-        # (so they can see the content)
-
-            #set party_id_admins [db_string party_id {select segment_id from rel_segments \
-                                                         where rel_type = 'dotlrn_admin_profile_rel'}]
-
-        #permission::grant -party_id $party_id_admins -object_id $item_id -privilege read
-
-        #ns_log Notice "ims_item_id ($item_id)  read permissions granted for community admins"
     }
     return $item_id
 }

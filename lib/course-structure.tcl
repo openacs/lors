@@ -15,7 +15,11 @@ ad_page_contract {
 }
 
 set package_id [ad_conn package_id]
-set community_id [dotlrn_community::get_community_id]
+
+array set site_node \
+    [application_group::closest_ancestor_application_group_site_node -node_id [ad_conn node_id]]
+set community_id [application_group::group_id_from_package_id -package_id $site_node(object_id)]
+set community_package_id $site_node(object_id)
 set return_url [ad_return_url]
 
 
@@ -48,7 +52,7 @@ if {[db_0or1row manifest { }]} {
         set instance [apm_package_key_from_id $fs_package_id]
     } else {
         set fs_package_id [site_node_apm_integration::get_child_package_id \
-                            -package_id [dotlrn_community::get_package_id $community_id] \
+                            -package_id $community_package_id \
                             -package_key "file-storage"]
         # Instance
         set instance [lorsm::get_course_name -manifest_id $man_id]

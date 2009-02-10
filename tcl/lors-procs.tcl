@@ -11,7 +11,7 @@ ad_library {
 
 namespace eval lors:: {}
 
-ad_proc lors::community_id {
+ad_proc lors::get_community_id {
     -node_id
 } {
     if { ![info exists node_id] } {
