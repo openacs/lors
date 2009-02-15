@@ -11,13 +11,42 @@ ad_library {
 
 namespace eval lors:: {}
 
-ad_proc lors::get_community_id {
-    -node_id
+ad_proc lors::get_community_element {
+    {-node_id ""}
+    -element:required
 } {
-    if { ![info exists node_id] } {
+    Return an element from the application group array (site node + group_id)
+} {
+    if { $node_id eq "" } {
         set node_id [ad_conn node_id]
     }
-    application_group::closest_ancestor_application_group_id -node_id $node_id
+    return [application_group::closest_ancestor_element \
+               -include_self \
+               -node_id $node_id \
+               -element $element]
+}
+ad_proc lors::get_community_id {
+    {-node_id ""}
+} {
+    return [lors::get_community_element -node_id $node_id -element application_group_id]
+}
+
+ad_proc lors::get_community_url {
+    {-node_id ""}
+} {
+    return [lors::get_community_element -node_id $node_id -element url]
+}
+
+ad_proc lors::get_community_package_id {
+    {-node_id ""}
+} {
+    return [lors::get_community_element -node_id $node_id -element package_id]
+}
+
+ad_proc lors::get_community_name {
+    {-node_id ""}
+} {
+    return [lors::get_community_element -node_id $node_id -element instance_name]
 }
 
 ad_proc -public lors::object_url {
