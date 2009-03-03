@@ -11,6 +11,17 @@ ad_library {
 
 namespace eval lors:: {}
 
+# DRB: All of this community cruft is due to the fact that the datamodel for
+# courses stupidly ties them to groups (originally limited to .LRN communities),
+# in addition to the appropriate package id.  It should be totally rewritten.
+
+ad_proc lors::get_community_node_id {
+    -community_id:required
+} {
+    return [site_node::get_node_id_from_object_id \
+               -object_id [application_group::package_id_from_group_id -group_id $community_id]]
+}
+
 ad_proc lors::get_community_element {
     {-node_id ""}
     -element:required
