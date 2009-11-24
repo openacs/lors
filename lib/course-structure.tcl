@@ -58,8 +58,9 @@ if {[db_0or1row manifest { }]} {
         set instance [lorsm::get_course_name -manifest_id $man_id]
 
         # Folder
-        set root_folder [lorsm::get_root_folder_id]
-        set folder_id [db_string get_folder_id { }]
+        # This supports LORS Central but breaks lorsm so its commented out
+        #        set root_folder [lorsm::get_root_folder_id]
+        #        set folder_id [db_string get_folder_id { }]
         set folder [apm_package_url_from_id $fs_package_id]?[export_vars folder_id]
     }
 
