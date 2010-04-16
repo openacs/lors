@@ -1,27 +1,15 @@
 
-<table class="list" cellpadding="3" cellspacing="1" width="90%">
-    <tr class="list-header">
-        <th class="list" valign="top" style="background-color: #e0e0e0; font-weight: bold;" colspan="2">#lorsm.Course_Information#</th>
-    </tr>
+<h2>#lorsm.Course_Information#</h2>
 
+<table class="list" cellpadding="3" cellspacing="1" width="90%">
     <tr class="list-odd">
         <td class="list" valign="top" style="background-color: #e0e0e0; font-weight: bold; width:20%;" >#lorsm.Course_Name#</td>
         <td class="list" valign="top" style="background-color: #f0f0f0; font-weight: bold;">
-            @course_name;noquote@(@identifier@)#lorsm.Course_Versions#<br />
-            <a href="@rename_url@">#lors.Rename_Course#</a>
+            @course_name;noquote@
+            <br>(@identifier@)
+            <br>#lorsm.Course_Versions#
         </td>
     </tr>
-
-    <tr class="list-even">
-        <td class="list"  style="background-color: #e0e0e0; font-weight: bold; width:20%" >
-            <a href="javascript:void(0)" onClick="document.getElementById('lors-advanced-course-structure').style.display='';">More Info</a>
-        </td>
-        <td class="list">&nbsp;</td>
-    </tr>
-</table>
-
-<div id="lors-advanced-course-structure" style="display:none;">
-    <table class="list" cellpadding="3" cellspacing="1" width="90%">
         <tr class="list-even">
             <td class="list" valign="top" style="background-color: #e0e0e0; font-weight: bold; width:20%">#lorsm.Metadata#</td>
             <td class="list" valign="top" style="background-color: #f0f0f0">
@@ -95,10 +83,13 @@
                 <div style="float: right;"><a href="@formater_url@" class="button">#lorsm.Change#</a></div>
             </td>
         </tr>
+
+       <if @extra_admin_html@ not nil>
+          @extra_admin_html;noquote@
+       </if>
+
     </table>
 </div>
 
-<if @extra_admin_html@ not nil>@extra_admin_html;noquote@</if>
-<hr>
-@orgs_list;noquote@
+<h2>#lorsm.Contents#</h2>
 <listtemplate name="items"></listtemplate>

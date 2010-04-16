@@ -58,9 +58,8 @@ if {[db_0or1row manifest { }]} {
         set instance [lorsm::get_course_name -manifest_id $man_id]
 
         # Folder
-        # This supports LORS Central but breaks lorsm so its commented out
-        #        set root_folder [lorsm::get_root_folder_id]
-        #        set folder_id [db_string get_folder_id { }]
+        set root_folder [lorsm::get_root_folder_id]
+        set folder_id [db_string get_folder_id { }]
         set folder [apm_package_url_from_id $fs_package_id]?[export_vars folder_id]
     }
 
@@ -80,9 +79,6 @@ if {[db_0or1row manifest { }]} {
     set display 0
 }
 
-
-append orgs_list \
-    "<table class=\"list\" cellpadding=\"3\" cellspacing=\"1\" width=\"100%\">"
 
 set pretty_types_map {}
 if { [apm_package_installed_p assessment] } {
@@ -136,13 +132,7 @@ template::multirow foreach organizations {
         set down [export_vars -base reorder-items {item_id {dir down} return_url}]
     }
 
-    append orgs_list "<tr class=\"list-even\">"
-
-} if_no_rows {
-    append orgs_list "<tr class=\"list-odd\"><td></td></tr>"
 }
-
-append orgs_list "</table>"
 
 set enabler_url [export_vars -base enabler {man_id}]
 set tracker_url [export_vars -base tracker {man_id}]
@@ -194,5 +184,3 @@ template::list::create \
             }
         }
     }
-
-set rename_url [export_vars -base course-rename {man_id}]
