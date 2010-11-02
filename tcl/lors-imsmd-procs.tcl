@@ -116,8 +116,9 @@ namespace eval lors::imsmd {
         {dir}
     } {
         Gets the Node where LOM is and its prefix (if any)
-        returns a list with two elements:
-        \{LOM_Node\} \{prefix\}
+        returns a list with three elements:
+        { type LOM prefix }
+        where type can be "NODE" or "XML" to describe the type of content for the "LOM" element
         or if didn't find any, returns 0
 
         @param tree The Node.
@@ -126,6 +127,7 @@ namespace eval lors::imsmd {
 
     } {
         if { ![$tree hasChildNodes] == 0 } {
+            set type "NODE"
             if { ![empty_string_p [$tree child all lom]] } {
                 set var_lom "lom"
                 set prefix ""
@@ -149,16 +151,19 @@ namespace eval lors::imsmd {
                 set lom [$tree child all $var_lom]
 
             } elseif { ![empty_string_p [$tree child all adlcp:location]] } {
-                set doc [dom parse [::tDOM::xmlReadFile $dir/[ns_urldecode \
-                    [[$tree child all adlcp:location] text]]]]
-                set lom [$doc documentElement]
-                set prefix [$lom prefix]
+                set type "XML"
+                set filename [ns_urldecode \
+                                  [[$tree child all adlcp:location] text]]
+                set lom [::tDOM::xmlReadFile $dir/$filename]
+                set doc [dom parse $lom]
+                set prefix [[$doc documentElement] prefix]
+                $doc delete
 
             } else {
                 set lom 0
                 set prefix 0
             }
-            return [list $lom $prefix]
+            return [list $type $lom $prefix]
         } else {
             return 0
         }
@@ -938,7 +943,7 @@ namespace eval lors::imsmd {
 
     ad_proc -public mdRelation {
         {-node:required}
-        {-prefix {}}
+        {-prefix ""}
     } {
         Relation Metadata extractor
         returns a list with the attributes and elements
@@ -971,11 +976,9 @@ namespace eval lors::imsmd {
                 #printx "Resource ([llength $resource]) " $resource
                 foreach res $resource {
                     # gets resource description
-                    set aa "$aa {[lors::imsmd::xmlExtractor description
-                            $res $prefix 1]}"
+                    set aa "$aa {[lors::imsmd::xmlExtractor description $res $prefix 1]}"
                     # gets resource catalogentry
-                    set aa "$aa {[lors::imsmd::xmlExtractor catalogentry
-                            $res $prefix 3]}"
+                    set aa "$aa {[lors::imsmd::xmlExtractor catalogentry $res $prefix 3]}"
                 }
                 lappend retlist $aa
             }
@@ -1195,7 +1198,7 @@ namespace eval lors::imsmd {
 
     ad_proc -public addLOM {
         {-lom:required}
-        {-prefix}
+        {-prefix ""}
         {-acs_object:required}
         {-dir {}}
     } {
@@ -1839,29 +1842,40 @@ namespace eval lors::imsmd {
         set p_ims_md_id $acs_object
         set mdnode $node
         set path_to_file $dir
-        #[lors::imsmd::getMDNode $manifest]
+        # [lors::imsmd::getMDNode $manifest]
 
-        set p_schema [lindex [lindex [lors::imsmd::getMDSchema $mdnode] 0] 0]
-        set p_schemaversion [lindex [lors::imsmd::getMDSchema $mdnode] 1]
+        set schema_results [lors::imsmd::getMDSchema $mdnode]
+        set p_schema [lindex [lindex $schema_results 0] 0]
+        set p_schemaversion [lindex $schema_results 1]
 
-        set lom [lindex [lors::imsmd::getLOM $mdnode $path_to_file] 0]
-        set prefix [lindex [lors::imsmd::getLOM $mdnode $path_to_file] 1]
-
+        set lom_results [lors::imsmd::getLOM $mdnode $path_to_file]
 
         # inserts into db
         # Checks if there's a LOM record
-        if {$lom != 0} {
+        if { $lom_results ne 0 } {
+            
+            set type [lindex $lom_results 0]
+            set prefix [lindex $lom_results 2]
+            if { $type eq "XML" } {
+                set lom_doc [dom parse [lindex $lom_results 1]]
+                set lom [$lom_doc documentElement]
+            } else {
+                set lom [lindex $lom_results 1]
+            }
+
             # Adds new MD record to ims_md
             lors::imsmd::addMDSchemaVersion \
                 -acs_object $p_ims_md_id \
                 -schema $p_schema \
                 -schemaversion $p_schemaversion
 
-            lors::imsmd::addLOM \
-                -lom $lom \
-                -prefix $prefix \
-                -acs_object $p_ims_md_id \
-                -dir $path_to_file
+            if { $lom ne "0" } {
+                lors::imsmd::addLOM \
+                    -lom $lom \
+                    -prefix $prefix \
+                    -acs_object $p_ims_md_id \
+                    -dir $path_to_file
+            }
         }
         return 1
     }
