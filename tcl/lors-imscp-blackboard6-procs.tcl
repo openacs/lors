@@ -860,7 +860,7 @@ ad_proc -public lors::imscp::bb6::extract_html {
 
                 ns_log Notice  "\n\n$file ($resourcext(ISENABLED)) $resourcext(LABEL)\n"
 
-                # set content folder to be the appropiate IMS webcontent
+                # set content folder to be the appropriate IMS webcontent
                 # type instead of "couse/x-bb-coursetoc" BB's propietary type
                 $resource removeAttribute type
                 $resource removeAttribute bb:file
