@@ -433,7 +433,7 @@ ad_proc -private lors::imscp::bb6::process_package {
 
     # If it has a
     # "Package" then
-    # we have to unzip the ziped file
+    # we have to unzip the zipped file
     # (contained in the
     # file name), then collect all the
     # unzipped file and
