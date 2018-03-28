@@ -1,7 +1,7 @@
 ad_library {
 
     Procedures to upgrade lors
-    @autor Miguel Marin (miguelmarin@viaro.net)
+    @author Miguel Marin (miguelmarin@viaro.net)
 
 }
 
