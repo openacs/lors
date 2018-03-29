@@ -973,7 +973,7 @@ ad_proc -public lors::imscp::findmanifest {
     @author Ernie Ghiglione (ErnieG@mm.st)
 
 } {
-    if {[file exist $tmp_dir/$file]} {
+    if {[file exists $tmp_dir/$file]} {
         return "$tmp_dir/$file"
     } else {
         return 0
