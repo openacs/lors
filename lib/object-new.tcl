@@ -99,7 +99,7 @@ ad_form \
                     # already. objects should be # able to be resources
                     # without being tied to one manifest, # since you can use
                     # a resource in more than one course and # it doesn't make
-                    # sense to have a seperate row every time # we reuse an
+                    # sense to have a separate row every time # we reuse an
                     # object DAVEB 2070321 - of course, it adds complexity and
                     # special handling, and this works for now.
                 }
@@ -126,7 +126,7 @@ ad_form \
                 # already. objects should be # able to be resources
                 # without being tied to one manifest, # since you can use
                 # a resource in more than one course and # it doesn't make
-                # sense to have a seperate row every time # we reuse an
+                # sense to have a separate row every time # we reuse an
                 # object
 
                 lors::imscp::item_to_resource_add \

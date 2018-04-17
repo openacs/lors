@@ -1084,7 +1084,7 @@ ad_proc -public lors::imscp::resource_add_from_object {
      Create an ims_cp_resource from an acs_object
 
     TODO since resources can be used for any course, we don't
-    need to add a seperate resource for each time an object is
+    need to add a separate resource for each time an object is
     used. We should return the existing res_id we just don't do that yet.
 
     @author Dave Bauer (dave@thedesignexperience.org)
