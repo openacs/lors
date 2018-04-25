@@ -116,7 +116,7 @@ ad_proc -public lors::imscp::bb::getNavigationItems {
     if {![empty_string_p flags_node]} {
 
         set items [$navigation child all ITEM]
-        set item_list [list]
+        set item_list {}
 
         foreach item $items {
             set item_value [lors::imsmd::getAtt $item value]
@@ -170,8 +170,8 @@ ad_proc -public lors::imscp::bb::getUsers {
     set docx [dom parse [::tDOM::xmlReadFile $file]]
     set usersnode [$docx documentElement]
 
-    set userlist [list]
-    set emails [list]
+    set userlist {}
+    set emails {}
     foreach user [$usersnode child all USER] {
         set user_id [$user getAttribute id]
         set login_id [[$user getElementsByTagName LOGINID] getAttribute value]

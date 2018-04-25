@@ -32,7 +32,7 @@ ad_proc -public lors::cr::has_files {
 
     @param fs_dir File System directory
 } {
-    set files [list]
+    set files {}
     foreach f [glob -no complain [file join $fs_dir * ]] {
         set type [file type $f]
         switch $type {
@@ -54,7 +54,7 @@ ad_proc -public lors::cr::has_dirs {
 
     @param fs_dir File System directory
 } {
-    set directories [list]
+    set directories {}
     foreach dir [glob -no complain [file join $fs_dir * ]] {
         set type [file type $dir]
         switch $type {
@@ -143,7 +143,7 @@ ad_proc -public lors::cr::add_files {
     # Get the ip
     set creation_ip [ad_conn peeraddr]
 
-    set retlist [list]
+    set retlist {}
     foreach fle $files {
 
         regexp {[^//\\]+$} $fle filename

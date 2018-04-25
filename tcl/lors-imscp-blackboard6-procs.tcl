@@ -180,7 +180,7 @@ ad_proc -public lors::imscp::bb6::content_getItemAttributes {
     if {![empty_string_p flags_node]} {
 
         set items [$navigation child all ITEM]
-        set item_list [list]
+        set item_list {}
 
         foreach item $items {
             set item_value [lors::imsmd::getAtt $item value]
@@ -209,7 +209,7 @@ ad_proc -public lors::imscp::bb6::get_coursetoc {
     # coursetoc
     set coursetoc [$doc documentElement]
 
-    set list_items  [list]
+    set list_items  {}
 
     # gets coursetoc elements and values
     lappend list_items {id} [lors::imsmd::getAtt $coursetoc id]
@@ -244,7 +244,7 @@ ad_proc -public lors::imscp::bb6::get_bb_doc {
 
     # content
     set content [$doc documentElement]
-    set list_items  [list]
+    set list_items  {}
 
     # gets content elements and values
     lappend list_items {id} [lors::imsmd::getAtt $content id]
@@ -269,9 +269,9 @@ ad_proc -public lors::imscp::bb6::get_bb_doc {
     lappend list_items {RENDERTYPE} [lors::imsmd::getAtt [$content getElementsByTagName RENDERTYPE] value]
     lappend list_items {URL} [lors::imsmd::getAtt [$content getElementsByTagName URL] value]
 
-    set files [list]
+    set files {}
     foreach file [[$content selectNodes /CONTENT/FILES] childNodes] {
-        set file_list [list]
+        set file_list {}
         lappend file_list {file_id} [lors::imsmd::getAtt $file id]
         lappend file_list {NAME} [lors::imsmd::getElement [$file getElementsByTagName NAME]]
         lappend file_list {FILEACTION} [lors::imsmd::getAtt [$file getElementsByTagName FILEACTION] value]
@@ -372,7 +372,7 @@ ad_proc -public lors::imscp::bb6::get_announcement {
     set doc [dom parse [::tDOM::xmlReadFile $file]]
     # content
     set announcement [$doc documentElement]
-    set list_items  [list]
+    set list_items  {}
 
     # gets announcement  elements and values
     lappend list_items {id} [lors::imsmd::getAtt $announcement id]
@@ -522,7 +522,7 @@ ad_proc -public lors::imscp::bb6::get_forum {
     # content
     set forum [$doc documentElement]
 
-    set list_items  [list]
+    set list_items  {}
 
     # gets forum elements and values
     lappend list_items {id} [lors::imsmd::getAtt $forum id]
@@ -638,7 +638,7 @@ ad_proc -public lors::imscp::bb6::clean_items {
 
         set items 0
 
-        set items_list [list]
+        set items_list {}
         foreach organization $num_organizations {
             set items_list [lors::imscp::bb6::getItems $organization]
         }
@@ -656,7 +656,7 @@ ad_proc -public lors::imscp::bb6::clean_items {
     }
 
     set resourcex [$resources child all resource]
-    set resources_list [list]
+    set resources_list {}
     foreach resource $resourcex {
         set res_identifier [lors::imsmd::getResource -node $resource -att identifier]
         set res_type [lors::imsmd::getResource -node $resource -att type]
