@@ -96,7 +96,7 @@ namespace eval lors::imsmd {
 
     } {
         if { [$tree hasChildNodes] == 1 } {
-            set retlist {}
+            set retlist [list]
             if { ![empty_string_p [$tree child all schema]] } {
                 lappend retlist [getElement [$tree child all schema] asXML]
             }
@@ -206,7 +206,7 @@ namespace eval lors::imsmd {
         }
 
         if { ![empty_string_p $md_g_title] } {
-            set retlist {}
+            set retlist [list]
             if {$datatype == 1} {
                 foreach one $md_g_title {
                     #gets langstrings
@@ -278,8 +278,8 @@ namespace eval lors::imsmd {
             set var "langstring"
         }
 
-        set aa {}
-        set ab {}
+        set aa [list]
+        set ab [list]
         set mult 0
         foreach child [$tree child all $var] {
             #set aa "$aa | [$child localName] (xml:lang=[getAtt $child xml:lang])  [$child text]"
@@ -318,7 +318,7 @@ namespace eval lors::imsmd {
         }
 
         set source [$tree child all $var_source]
-        set sv {}
+        set sv [list]
         if { ![empty_string_p $source] } {
             #Gets all the langstrings
             set sv "$sv [getLangStr $source $prefix]"
@@ -354,7 +354,7 @@ namespace eval lors::imsmd {
         }
 
         set catalog [$tree child all $var_catalog]
-        set ce {}
+        set ce [list]
         if { ![empty_string_p $catalog] } {
             #Gets all the langstrings
             set ce "$ce [getElement $catalog $prefix]"
@@ -506,7 +506,7 @@ namespace eval lors::imsmd {
 
         set lom_lc_contribute [$tree child all $var_contribute]
         if { ![empty_string_p $lom_lc_contribute] } {
-            set cont_list {}
+            set cont_list [list]
             foreach contribute [$tree child all $var_contribute] {
                 set role [$contribute child all $var_role]
                 if { ![empty_string_p $role] } {
@@ -515,7 +515,7 @@ namespace eval lors::imsmd {
 
                 set centity [$contribute child all $var_centity]
                 if { ![empty_string_p $centity] } {
-                    set cc {}
+                    set cc [list]
                     foreach cent $centity {
                         set cc "$cc [xmlExtractor vcard $cent $prefix ]"
                     }
@@ -553,7 +553,7 @@ namespace eval lors::imsmd {
         set lom_te_req [$tree child all $var_requirement]
         if { ![empty_string_p $lom_te_req] } {
             # there could be multiple req
-            set ret_list {}
+            set ret_list [list]
             foreach req [$tree child all $var_requirement] {
                 set tmpvar [xmlExtractor type $req $prefix 2]
                 set tmpvar "$tmpvar [xmlExtractor name $req $prefix 2]"
@@ -606,7 +606,7 @@ namespace eval lors::imsmd {
         }
 
         if { ![empty_string_p $lom_g] } {
-            set retlist {}
+            set retlist [list]
             switch $element {
                 title {
                     #gets title
@@ -674,7 +674,7 @@ namespace eval lors::imsmd {
         }
 
         if { ![empty_string_p $lom_lc] } {
-            set retlist {}
+            set retlist [list]
             switch $element {
                 version {
                     #gets version
@@ -721,7 +721,7 @@ namespace eval lors::imsmd {
             set lom_md [$node child all metametadata]
         }
         if { ![empty_string_p $lom_md] } {
-            set retlist {}
+            set retlist [list]
             switch $element {
                 contribute {
                     #gets contribute
@@ -769,7 +769,7 @@ namespace eval lors::imsmd {
             set lom_te [$node child all technical]
         }
         if { ![empty_string_p $lom_te] } {
-            set retlist {}
+            set retlist [list]
             switch $element {
                 format {
                     #gets format
@@ -832,7 +832,7 @@ namespace eval lors::imsmd {
             set lom_ed [$node child all educational]
         }
         if { ![empty_string_p $lom_ed] } {
-            set retlist {}
+            set retlist [list]
             switch $element {
                 interactivitytype {
                     #gets format
@@ -916,7 +916,7 @@ namespace eval lors::imsmd {
         }
 
         if { ![empty_string_p $lom_ri] } {
-            set retlist {}
+            set retlist [list]
             switch $element {
                 cost {
                     #gets cost
@@ -961,7 +961,7 @@ namespace eval lors::imsmd {
         }
 
         if { ![empty_string_p $lom_re] } {
-            set retlist {}
+            set retlist [list]
             foreach relation $lom_re {
                 # Relation can happen 0 to 100 times
                 #gets kind
@@ -1008,7 +1008,7 @@ namespace eval lors::imsmd {
         }
 
         if { ![empty_string_p $lom_an] } {
-            set retlist {}
+            set retlist [list]
             foreach annotation $lom_an {
                 #gets person
                 set aa "{[lors::imsmd::xmlExtractor person $annotation $prefix 5]}"
@@ -1042,8 +1042,8 @@ namespace eval lors::imsmd {
             set lom_cl [$node child all classification]
         }
         if { ![empty_string_p $lom_cl] } {
-            set retlist {}
-            set bbcc {}
+            set retlist [list]
+            set bbcc [list]
             foreach classification $lom_cl {
                 #gets purpose
                 set aa "{[lors::imsmd::xmlExtractor purpose $classification $prefix 2]}"
@@ -1118,7 +1118,7 @@ namespace eval lors::imsmd {
                 return [lors::imsmd::getAtt $node href]
 
             } files {
-                set files {}
+                set files [list]
                 # gets files
                 set filex [$node child all file]
                 if { ![empty_string_p $filex] } {
@@ -1142,7 +1142,7 @@ namespace eval lors::imsmd {
                 return $files
 
             } dependencies {
-                set dependencies {}
+                set dependencies [list]
                 # gets dependencies
                 set depende [$node child all dependency]
                 if { ![empty_string_p $depende] } {
@@ -1171,7 +1171,7 @@ namespace eval lors::imsmd {
         set itemx [$tree child all item]
 
         if { ![empty_string_p $itemx] } {
-            set items {}
+            set items [list]
             foreach itemx  [$tree child all item] {
                 # gets item identifier
                 printx "item identifier: " [getAtt $itemx identifier]

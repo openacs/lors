@@ -22,7 +22,7 @@ switch $add_type {
                         -package_id $xowiki_node(object_id) \
                         -name xowiki]
 
-        set options {}
+        set options [list]
         set order_clause "order by ci.name"
 
         db_foreach instance_select \

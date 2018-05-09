@@ -940,7 +940,7 @@ ad_proc -public lors::imscp::dir_walk {
     @author Ernie Ghiglione (ErnieG@mm.st)
 
 } {
-    set files {}
+    set files [list]
     foreach f [glob -nocomplain [file join $dir *]] {
         set type [file type $f]
         switch $type {
