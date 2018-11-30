@@ -80,7 +80,7 @@ ad_proc -public lors::object_url {
     #view is easy
     set object_type [acs_object_type $object_id]
     if {$object_type eq "content_item"} {
-        set object_type [content::item::content_type -item_id $object_id]
+        set object_type [content::item::get_content_type -item_id $object_id]
     }
     ns_log notice "lors::object_Url object_id='${object_id}'"
     switch $url {

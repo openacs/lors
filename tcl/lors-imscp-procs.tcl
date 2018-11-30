@@ -1061,7 +1061,7 @@ ad_proc -public lors::imscp::item_add_from_object {
     }
 
     if {$object(object_type) eq "content_item"} {
-        set object(object_type) [content::item::content_type -item_id $object_id]
+        set object(object_type) [content::item::get_content_type -item_id $object_id]
     }
 
     set item_id [lors::imscp::item_add \
@@ -1100,7 +1100,7 @@ ad_proc -public lors::imscp::resource_add_from_object {
 } {
     db_1row get_object {} -column_array object
     if {$object(object_type) eq "content_item"} {
-        set object(object_type) [content::item::content_type -item_id $object_id]
+        set object(object_type) [content::item::get_content_type -item_id $object_id]
     }
     set res_id [lors::imscp::resource_add \
                     -man_id $man_id \
