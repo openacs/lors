@@ -238,7 +238,7 @@ ad_proc -public lors::imscp::manifest_add {
     }
 
     #########################################################################################
-    # Since now we dont use acs-objects for the manifest, then a new cr_item and revision
+    # Since now we don't use acs-objects for the manifest, then a new cr_item and revision
     # needs to be done to store the manifest. The cr_item and cr_revision are created here
     # in orther to use the CR API.
 
@@ -401,7 +401,7 @@ ad_proc -public lors::imscp::organization_add {
     }
 
     #--------------------------------------------------------------------------------------#
-    # Since now we dont use acs-objects for the organizations, then a new cr_item and revision
+    # Since now we don't use acs-objects for the organizations, then a new cr_item and revision
     # needs to be done to store it. The cr_item and cr_revision are created here
     # in orther to use the CR API. The item name probably has to change
 
@@ -519,7 +519,7 @@ ad_proc -public lors::imscp::item_add {
     }
 
     #--------------------------------------------------------------------------------------#
-    # Since now we dont use acs-objects for the item, then a new cr_item and revision
+    # Since now we don't use acs-objects for the item, then a new cr_item and revision
     # needs to be done to store it. The cr_item and cr_revision are created here
     # in orther to use the CR API. The item name probably has to change
 
@@ -553,7 +553,7 @@ ad_proc -public lors::imscp::item_add {
     db_dml set_sort_order {}
 
     # DRB: I stripped out a bunch of commented-out permission twiddling that leads me
-    # to believe this is pretty much bogus.  However I've left in the toggle inherit.
+    # to believe this is pretty much bogus.  However, I've left in the toggle inherit.
     # This doesn't lead to a dotlrn dependency per se because this is driven throughout
     # by parameters and an extension to the course XML (manifest? haven't looked closely).
     # My work for MGH doesn't extend to fixing every stupid thing I find, just getting
@@ -705,7 +705,7 @@ ad_proc -public lors::imscp::resource_add {
     }
 
     #--------------------------------------------------------------------------------------#
-    # Since now we dont use acs-objects for the resource, then a new cr_item and revision
+    # Since now we don't use acs-objects for the resource, then a new cr_item and revision
     # needs to be done to store it. The cr_item and cr_revision are created here
     # in orther to use the CR API. The item name probably has to change
 
@@ -805,7 +805,7 @@ ad_proc -public lors::imscp::file_add {
     -filename:required
     {-hasmetadata ""}
 } {
-    Adds a files to ims_cp_files table (Note: we are not adding files to the respository here).
+    Adds a file to ims_cp_files table (Note: we are not adding files to the repository here).
 
     @option file_id file_id for file (cr_revision).
     @option res_id the resource id.
