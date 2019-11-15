@@ -14,7 +14,7 @@
             <td class="list" valign="top" style="background-color: #e0e0e0; font-weight: bold; width:20%">#lorsm.Metadata#</td>
             <td class="list" valign="top" style="background-color: #f0f0f0">
                 <if @man_metadata@ eq "Yes">
-                    <if @lorsm_p@><a href="md/?ims_md_id=@man_id@">#lorsm.Yes#</a></if>
+                    <if @lorsm_p;literal@ true><a href="md/?ims_md_id=@man_id@">#lorsm.Yes#</a></if>
                     <else>#lorsm.Yes#</else>
                 </if>
                 <else>#lorsm.No#</else>

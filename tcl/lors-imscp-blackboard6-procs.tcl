@@ -74,14 +74,14 @@ ad_proc -public lors::imscp::bb6::getItems {
             set cc [concat $cc "[lors::imsmd::getAtt $itemx identifierref]"]
 
             # gets xml node
-            set cc [concat $cc $itemx]
+            lappend cc {*}$itemx
             set it_list [concat $it_list [list $cc]]
 
             set itemxx [$itemx child all item]
             if { ![empty_string_p $itemxx] } {
                 set it_list [concat $it_list [getItems $itemx]]
             }
-            set items [concat $items $cc]
+            lappend items {*}$cc
         }
     }
     return $it_list

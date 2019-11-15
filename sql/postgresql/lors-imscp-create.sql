@@ -65,7 +65,7 @@ Identifier get from the imsmanifest.xml file.
 
 comment on column ims_cp_manifests.parent_man_id is '
 Parent manifest.
-A manifest could have submanifests. If the manifest doesnt have a parent
+A manifest could have submanifests. If the manifest doesn't have a parent
 then we put 0
 ';
 

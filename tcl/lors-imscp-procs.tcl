@@ -147,7 +147,7 @@ ad_proc -public lors::imscp::getItems {
             set itemxx [$itemx child all item]
             if { ![empty_string_p $itemxx] } {
                 incr parent
-                set cc [concat $cc [list [getItems $itemx $parent]]]
+                lappend cc [getItems $itemx $parent]
                 incr parent -1
             }
             set items [concat $items [list $cc]]
@@ -655,7 +655,7 @@ ad_proc -public lors::imscp::addItems {
             set subitem [lors::imscp::addItems \
                             -itm_folder_id $itm_folder_id \
                             -org_id $p_org_id [lindex $item 13] $item_id $tmp_dir]
-            set retlist [concat $retlist $subitem]
+            lappend retlist {*}$subitem
         }
     }
     return $retlist
