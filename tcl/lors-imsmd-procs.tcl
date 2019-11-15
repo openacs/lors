@@ -154,7 +154,7 @@ namespace eval lors::imsmd {
                 set type "XML"
                 set filename [ns_urldecode \
                                   [[$tree child all adlcp:location] text]]
-                set lom [::tDOM::xmlReadFile $dir/$filename]
+                set lom [::tdom::xmlReadFile $dir/$filename]
                 set doc [dom parse $lom]
                 set prefix [[$doc documentElement] prefix]
                 $doc delete

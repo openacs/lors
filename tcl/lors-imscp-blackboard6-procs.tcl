@@ -205,7 +205,7 @@ ad_proc -public lors::imscp::bb6::get_coursetoc {
     @author Ernie Ghiglione (ErnieG@mm.st)
 } {
     # open xml file
-    set doc [dom parse [::tDOM::xmlReadFile $file]]
+    set doc [dom parse [::tdom::xmlReadFile $file]]
     # coursetoc
     set coursetoc [$doc documentElement]
 
@@ -240,7 +240,7 @@ ad_proc -public lors::imscp::bb6::get_bb_doc {
     @author Ernie Ghiglione (ErnieG@mm.st)
 } {
     # open xml file
-    set doc [dom parse [::tDOM::xmlReadFile $file]]
+    set doc [dom parse [::tdom::xmlReadFile $file]]
 
     # content
     set content [$doc documentElement]
@@ -369,7 +369,7 @@ ad_proc -public lors::imscp::bb6::get_announcement {
     @author Ernie Ghiglione (ErnieG@mm.st)
 } {
     # open xml file
-    set doc [dom parse [::tDOM::xmlReadFile $file]]
+    set doc [dom parse [::tdom::xmlReadFile $file]]
     # content
     set announcement [$doc documentElement]
     set list_items  [list]
@@ -518,7 +518,7 @@ ad_proc -public lors::imscp::bb6::get_forum {
     @author Ernie Ghiglione (ErnieG@mm.st)
 } {
     # open xml file
-    set doc [dom parse [::tDOM::xmlReadFile $file]]
+    set doc [dom parse [::tdom::xmlReadFile $file]]
     # content
     set forum [$doc documentElement]
 
@@ -555,7 +555,7 @@ ad_proc -public lors::imscp::bb6::create_MD {
     @author Ernie Ghiglione (ErnieG@mm.st)
 } {
     # open manifest file with tDOM
-    set doc [dom parse [::tDOM::xmlReadFile $tmp_dir/$file]]
+    set doc [dom parse [::tdom::xmlReadFile $tmp_dir/$file]]
     # gets the manifest tree
     set manifest [$doc documentElement]
     # we add the xml namespace for dotLRN
@@ -570,7 +570,7 @@ ad_proc -public lors::imscp::bb6::create_MD {
     if {[empty_string_p $metadata]} {
 
         set filex res00001.dat
-        set docx [dom parse [::tDOM::xmlReadFile $tmp_dir/$filex]]
+        set docx [dom parse [::tdom::xmlReadFile $tmp_dir/$filex]]
         # gets BB's course info
         set course [$docx documentElement]
 
@@ -624,7 +624,7 @@ ad_proc -public lors::imscp::bb6::clean_items {
     @author Ernie Ghiglione (ErnieG@mm.st)
 } {
     # open xml file
-    set doc [dom parse [::tDOM::xmlReadFile $tmp_dir/$file]]
+    set doc [dom parse [::tdom::xmlReadFile $tmp_dir/$file]]
 
     # gets the manifest tree
     set manifest [$doc documentElement]
@@ -811,7 +811,7 @@ ad_proc -public lors::imscp::bb6::extract_html {
 } {
     ## Opens imsmanifest.xml
     # open manifest file with tDOM
-    set doc [dom parse [::tDOM::xmlReadFile $tmp_dir/$file]]
+    set doc [dom parse [::tdom::xmlReadFile $tmp_dir/$file]]
     # gets the manifest tree
     set manifest [$doc documentElement]
 

@@ -167,7 +167,7 @@ ad_proc -public lors::imscp::bb::getUsers {
     @author Ernie Ghiglione (ErnieG@mm.st)
 } {
 
-    set docx [dom parse [::tDOM::xmlReadFile $file]]
+    set docx [dom parse [::tdom::xmlReadFile $file]]
     set usersnode [$docx documentElement]
 
     set userlist [list]
