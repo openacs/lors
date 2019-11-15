@@ -203,7 +203,7 @@ ad_proc -public lors::imscp::manifest_add {
     @option orgs_default default organizations value.
     @option hasmetadata whether the manifest has metadata (boolean).
     @option parent_man_id parent manifest id (for manifest with submanifests).
-    @option isscorm wheather the manifest is SCORM compliant
+    @option isscorm whether the manifest is SCORM compliant
     @option folder_id the CR folder ID we created to put the manifest on.
     @option fs_package_id file-storage package id.
     @option package_id package_id for the instance of LORSm
@@ -487,7 +487,7 @@ ad_proc -public lors::imscp::item_add {
     @option timelimitaction items time limit action (SCORM extension).
     @option datafromlms items data from LMS (SCORM extension).
     @option masteryscore items mastery score (SCORM extension).
-    @option dotlrn_permission dotlrn extension to incoporate permissions.
+    @option dotlrn_permission dotlrn extension to incorporate permissions.
     @option package_id Package id.
     @option user_id user that adds the category. [ad_conn user_id] used by default.
     @option creation_ip ip-address of the user that adds the category. [ad_conn peeraddr] used by default.
@@ -936,7 +936,7 @@ ad_proc -public lors::imscp::dir_walk {
     Walk starting at a given directory and return a list
     of all the plain files found
 
-    @param dir Directory to walk thru
+    @param dir Directory to walk through
     @author Ernie Ghiglione (ErnieG@mm.st)
 
 } {

@@ -25,7 +25,7 @@ ad_library {
 namespace eval lors::imsmd {
 
     ad_proc -public getAtt {doc attr_name} {
-        getAtt Gets attributes for an specific element
+        getAtt Gets attributes for a specific element
 
         @param doc Document
         @param attr_name Attribute we want to fetch
