@@ -28,21 +28,21 @@ select acs_sc_impl_alias__new(
 
 
 create function ims_md_record__itrg ()
-returns opaque as '
+returns trigger as '
 begin
         perform search_observer__enqueue(new.ims_md_id,''INSERT'');
     return null;
 end;' language 'plpgsql';
 
 create function ims_md_record__dtrg ()
-returns opaque as '
+returns trigger as '
 begin
     perform search_observer__enqueue(old.ims_md_id,''DELETE'');
     return old;
 end;' language 'plpgsql';
 
 create function ims_md_record__utrg ()
-returns opaque as '
+returns trigger as '
 begin
         perform search_observer__enqueue(old.ims_md_id,''DELETE'');
         perform search_observer__enqueue(old.ims_md_id,''UPDATE'');
